@@ -103,7 +103,7 @@ cutForest =
 
 
 
--- Bread Crumb
+-- Zipper
 
 
 toZipper : Tree a -> Zipper a
@@ -136,6 +136,22 @@ up ( item, breadcrumbs ) =
             Just ( tree parent (item ::: left +++ right), tail )
 
 
+upwards : Int -> Zipper a -> Maybe (Zipper a)
+upwards n zipper =
+    if n < 0 then
+        Nothing
+    else if n == 0 then
+        Just zipper
+    else
+        up zipper
+            |> Maybe.andThen (upwards (n - 1))
+
+
+root : Zipper a -> Zipper a
+root (( _, breadcrumbs ) as zipper) =
+    attempt (upwards <| List.length breadcrumbs) zipper
+
+
 open : (a -> Bool) -> Zipper a -> Maybe (Zipper a)
 open predicate ( Tree current children, breadcrumbs ) =
     let
@@ -148,3 +164,19 @@ open predicate ( Tree current children, breadcrumbs ) =
 
         Nothing ->
             Nothing
+
+
+openPath : (b -> a -> Bool) -> List b -> Zipper a -> Maybe (Zipper a)
+openPath predicate path zipper =
+    case path of
+        [] ->
+            Just zipper
+
+        head :: tail ->
+            open (predicate head) zipper
+                |> Maybe.andThen (openPath predicate tail)
+
+
+atemptOpenPath : (b -> a -> Bool) -> List b -> Zipper a -> Zipper a
+atemptOpenPath predicate path zipper =
+    List.foldr (\i -> attempt <| open <| predicate i) zipper path
