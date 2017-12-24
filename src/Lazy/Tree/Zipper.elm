@@ -91,7 +91,7 @@ openPath predicate path zipper =
 
 atemptOpenPath : (b -> a -> Bool) -> List b -> Zipper a -> Zipper a
 atemptOpenPath predicate path zipper =
-    List.foldr (\i -> attempt <| open <| predicate i) zipper path
+    List.foldr (attempt << open << predicate) zipper path
 
 
 
