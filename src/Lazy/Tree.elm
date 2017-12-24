@@ -1,6 +1,22 @@
-module Lazy.Tree exposing (..)
+module Lazy.Tree
+    exposing
+        ( Forest
+        , Tree
+        , andMap
+        , andThen
+        , children
+        , constructTree
+        , flatten
+        , forestMap
+        , fromList
+        , item
+        , map
+        , map2
+        , singleton
+        , tree
+        )
 
-import Lazy.List as LL exposing ((:::), LazyList)
+import Lazy.List as LL exposing (LazyList)
 
 
 type Tree a
@@ -37,7 +53,17 @@ children (Tree _ c) =
 
 map : (a -> b) -> Tree a -> Tree b
 map predicate (Tree a forest) =
-    Tree (predicate a) <| forestMap predicate forest
+    tree (predicate a) <| forestMap predicate forest
+
+
+map2 : (a -> b -> c) -> Tree a -> Tree b -> Tree c
+map2 predicate (Tree a1 f1) (Tree a2 f2) =
+    tree (predicate a1 a2) <| forestMap2 predicate f1 f2
+
+
+andMap : Tree a -> Tree (a -> b) -> Tree b
+andMap =
+    map2 (|>)
 
 
 flatten : Tree (Tree a) -> Tree a
@@ -67,6 +93,11 @@ fromList root isParent =
 forestMap : (a -> b) -> Forest a -> Forest b
 forestMap predicate =
     LL.map (map predicate)
+
+
+forestMap2 : (a -> b -> c) -> Forest a -> Forest b -> Forest c
+forestMap2 predicate =
+    LL.map2 (map2 predicate)
 
 
 fromList_ : Maybe a -> (Maybe a -> a -> Bool) -> List a -> Forest a

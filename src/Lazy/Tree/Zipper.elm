@@ -1,4 +1,19 @@
-module Lazy.Tree.Zipper exposing (..)
+module Lazy.Tree.Zipper
+    exposing
+        ( BreadCrumb
+        , Zipper
+        , attempt
+        , attemptOpenPath
+        , breadCrumbsMap
+        , current
+        , currentChildren
+        , fromTree
+        , open
+        , openPath
+        , root
+        , up
+        , upwards
+        )
 
 import Lazy.List as LL exposing ((+++), (:::), LazyList)
 import Lazy.Tree as Tree exposing (Forest, Tree)
@@ -25,6 +40,11 @@ current =
 currentChildren : Zipper a -> LazyList a
 currentChildren =
     LL.map Tree.item << Tree.children << Tuple.first
+
+
+map : (a -> b) -> Zipper a -> Zipper b
+map predicate ( tree, breadcrumbs ) =
+    ( Tree.map predicate tree, breadCrumbsMap predicate breadcrumbs )
 
 
 attempt : (Zipper a -> Maybe (Zipper a)) -> Zipper a -> Zipper a
@@ -89,9 +109,14 @@ openPath predicate path zipper =
                 |> Maybe.andThen (openPath predicate tail)
 
 
-atemptOpenPath : (b -> a -> Bool) -> List b -> Zipper a -> Zipper a
-atemptOpenPath predicate path zipper =
+attemptOpenPath : (b -> a -> Bool) -> List b -> Zipper a -> Zipper a
+attemptOpenPath predicate path zipper =
     List.foldr (attempt << open << predicate) zipper path
+
+
+breadCrumbsMap : (a -> b) -> List (BreadCrumb a) -> List (BreadCrumb b)
+breadCrumbsMap predicate =
+    List.map (\( pre, item, after ) -> ( Tree.forestMap predicate pre, predicate item, Tree.forestMap predicate after ))
 
 
 
