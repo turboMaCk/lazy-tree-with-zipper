@@ -270,7 +270,7 @@ up ( item, breadcrumbs ) =
             Nothing
 
         ( left, parent, right ) :: tail ->
-            Just ( Tree.tree parent (item ::: left +++ right), tail )
+            Just ( Tree.tree parent (left +++ (item ::: right)), tail )
 
 
 {-| Go upwards n times.
@@ -373,10 +373,10 @@ open predicate ( tree, breadcrumbs ) =
         children =
             Tree.children tree
 
-        ( pre, item, after ) =
+        ( left, item, right ) =
             cutForest predicate children
     in
-    Maybe.map (\tree -> ( tree, ( pre, current, after ) :: breadcrumbs )) item
+    Maybe.map (\tree -> ( tree, ( left, current, right ) :: breadcrumbs )) item
 
 
 {-| Open multiple by reducing list
