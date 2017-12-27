@@ -1,6 +1,7 @@
 {
   "root": "../src",
   "tests": [
-    "Lazy.Tree"
+      "Lazy.Tree",
+      "Lazy.Tree.Zipper"
   ]
 }
