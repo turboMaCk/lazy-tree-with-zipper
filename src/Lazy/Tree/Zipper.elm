@@ -31,7 +31,12 @@ module Lazy.Tree.Zipper
 
 # Query
 
-@docs current, children, isRoot, insert, delete, update, setTree, attempt
+@docs current, children, isRoot, attempt
+
+
+# Modify
+
+@docs insert, delete, update, setTree,
 
 
 # Operations

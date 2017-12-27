@@ -24,12 +24,17 @@ module Lazy.Tree
 
 # Types
 
-@docs Tree, Forest, tree, singleton, insert, fromList
+@docs Tree, Forest, tree, singleton, fromList
 
 
 # Query
 
 @docs isEmpty, item, children, descendants
+
+
+# Modify
+
+@docs insert
 
 
 # Transforms
@@ -46,7 +51,10 @@ module Lazy.Tree
 import Lazy.LList as LL exposing (LList)
 
 
-{-| -}
+{-| ** Be careful when comparing Trees using `(==)`.**
+Due to use of lazyness and lack of ad hoc polymorphism in Elm `(==)` isn't reliable
+for comparing Trees.
+-}
 type Tree a
     = Tree a (Forest a)
 
@@ -173,11 +181,6 @@ descendants (Tree _ d) =
         |> map ((*) 2)
         |> children
     --> [ 4, 6 ]
-
-TODO: reevaluate this
-** Be careful when comparing mapped Trees using `(==)`.**
-Due to use of `LazyList` and lack of type classes in Elm `(==)` isn't reliable
-for comparing Trees.
 
 -}
 map : (a -> b) -> Tree a -> Tree b
