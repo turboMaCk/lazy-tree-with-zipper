@@ -7,7 +7,10 @@ module Lazy.Tree
         , children
         , flatten
         , forestMap
+        , forestMap2
         , fromList
+        , insert
+        , isEmpty
         , item
         , map
         , map2
@@ -15,18 +18,17 @@ module Lazy.Tree
         , tree
         )
 
-{-| Lazy Tree with zipper
-nanana
+{-| Lazy Rose Tree implementation
 
 
 # Types
 
-@docs Tree, Forest, tree, singleton, fromList
+@docs Tree, Forest, tree, singleton, insert, fromList
 
 
 # Query
 
-@docs item, children
+@docs isEmpty, item, children
 
 
 # Transforms
@@ -36,7 +38,7 @@ nanana
 
 # Forest
 
-@docs forestMap
+@docs forestMap, forestMap2
 
 -}
 
@@ -89,6 +91,12 @@ singleton a =
 tree : a -> Forest a -> Tree a
 tree =
     Tree
+
+
+{-| -}
+isEmpty : Tree a -> Bool
+isEmpty =
+    LL.isEmpty << children
 
 
 {-| Obtain item from tree
@@ -205,6 +213,8 @@ flatten (Tree (Tree item c) children) =
 
 {-| Maping tree construction over Tree.
 
+    import Lazy.List as LL
+
     tree "foo" (LL.fromList [ singleton "bar", singleton "baz" ])
         |> andThen (\a -> tree a <| LL.fromList [ singleton <| a ++ " fighter" ])
         |> children
@@ -218,23 +228,93 @@ andThen fc =
     flatten << map fc
 
 
-{-| -}
-fromList : a -> (Maybe a -> a -> Bool) -> List a -> Tree a
-fromList root isParent =
-    tree root << fromList_ Nothing isParent
+{-| Insert tree as children tree
+
+    import Lazy.List as LL
+
+    singleton 1
+        |> insert (singleton 2)
+        |> insert (singleton 3)
+        |> children
+        |> LL.map item
+        |> LL.toList
+    --> [ 2, 3 ]
+
+    singleton 1
+        |> insert (singleton 2)
+        |> item
+    --> 1
+
+-}
+insert : Tree a -> Tree a -> Tree a
+insert t (Tree item c) =
+    tree item <| c +++ LL.fromList [ t ]
+
+
+{-| Construct tree from list
+
+    import Lazy.List as LL
+
+    [ { id = 1, parent = Nothing }
+    , { id = 2, parent = Nothing }
+    , { id = 3, parent = Just 1 }
+    ]
+        |> fromList (\p i -> Maybe.map .id p == i.parent)
+        |> LL.map (.id << item)
+        |> LL.toList
+    --> [ 1, 2 ]
+
+    [ { id = 1, parent = Nothing }
+    , { id = 2, parent = Nothing }
+    , { id = 3, parent = Just 1 }
+    , { id = 4, parent = Just 1 }
+    , { id = 5, parent = Just 2 }
+    ]
+        |> fromList (\p i -> Maybe.map .id p == i.parent)
+        |> LL.andThen children
+        |> LL.map (.id << item)
+        |> LL.toList
+    --> [ 3, 4, 5 ]
+
+-}
+fromList : (Maybe a -> a -> Bool) -> List a -> Forest a
+fromList isParent =
+    fromList_ Nothing isParent
 
 
 
 -- Forest
 
 
-{-| -}
+{-| Map function over forest
+
+    import Lazy.List as LL
+
+    [ 1, 2, 3 ]
+        |> fromList (\m _ -> m == Nothing)
+        |> forestMap ((+) 1)
+        |> LL.map item
+        |> LL.toList
+    --> [ 2, 3, 4 ]
+
+-}
 forestMap : (a -> b) -> Forest a -> Forest b
 forestMap predicate =
     LL.map (map predicate)
 
 
-{-| -}
+{-| Map function over two forests
+
+    import Lazy.List as LL
+
+    [ 1, 2, 3 ]
+        |> fromList (\m _ -> m == Nothing)
+        |> forestMap2 (+) (fromList (\m _ -> m == Nothing) [1, 2])
+        |> LL.map item
+        |> LL.toList
+    --> [ 2, 4 ]
+
+-}
 forestMap2 : (a -> b -> c) -> Forest a -> Forest b -> Forest c
 forestMap2 predicate =
     LL.map2 (map2 predicate)
