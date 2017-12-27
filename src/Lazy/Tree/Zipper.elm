@@ -1,6 +1,6 @@
 module Lazy.Tree.Zipper
     exposing
-        ( BreadCrumb
+        ( Breadcrumb
         , Zipper
         , attempt
         , attemptOpenPath
@@ -26,7 +26,7 @@ module Lazy.Tree.Zipper
 
 # Types
 
-@docs BreadCrumb, Zipper, fromTree
+@docs Breadcrumb, Zipper, fromTree
 
 
 # Query
@@ -39,7 +39,7 @@ module Lazy.Tree.Zipper
 @docs map, open, openPath, attemptOpenPath, up, upwards, root
 
 
-# BreadCrumbs
+# Breadcrumbs
 
 @docs breadCrumbs
 
@@ -50,13 +50,13 @@ import Lazy.Tree as Tree exposing (Forest, Tree)
 
 
 {-| -}
-type alias BreadCrumb a =
+type alias Breadcrumb a =
     ( Forest a, a, Forest a )
 
 
 {-| -}
 type alias Zipper a =
-    ( Tree a, List (BreadCrumb a) )
+    ( Tree a, List (Breadcrumb a) )
 
 
 {-| Init Zipper for Tree
@@ -124,7 +124,6 @@ isRoot =
 {-| Insert sub Tree to current Tree
 
     import Lazy.Tree as T
-    import Lazy.LList as LL
 
     T.singleton "foo"
         |> fromTree
@@ -144,7 +143,6 @@ insert tree ( t, breadcrumbs ) =
 Returns Nothing if root node is removed.
 
     import Lazy.Tree as T
-    import Lazy.LList as LL
 
     T.singleton "foo"
         |> fromTree
@@ -452,7 +450,7 @@ breadCrumbs =
 -- Private
 
 
-breadCrumbsMap : (a -> b) -> List (BreadCrumb a) -> List (BreadCrumb b)
+breadCrumbsMap : (a -> b) -> List (Breadcrumb a) -> List (Breadcrumb b)
 breadCrumbsMap predicate =
     List.map (\( pre, item, after ) -> ( Tree.forestMap predicate pre, predicate item, Tree.forestMap predicate after ))
 

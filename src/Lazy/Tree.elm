@@ -139,8 +139,6 @@ children =
 
 {-| Obtain descendants as Forest from the tree
 
-    import Lazy.LList as LL
-
     singleton "foo"
         |> insert (singleton "bar")
         |> insert (singleton "baz")
@@ -189,11 +187,11 @@ map predicate (Tree a forest) =
 
 {-| Map function over two trees
 
-    import Lazy.LList as LL
-
     map2 (+) (singleton 1) (singleton 5)
         |> item
     --> 6
+
+    import Lazy.LList as LL
 
     tree 1 (LL.fromList [ singleton 2, singleton 3, singleton 4 ])
         |> map2 (+) (tree 5 <| LL.fromList [ singleton 6, singleton 7 ])
@@ -224,12 +222,12 @@ andMap =
 
 {-| Flatten Tree of Trees
 
-    import Lazy.LList as LL
-
     singleton (singleton 1)
         |> flatten
         |> item
     --> 1
+
+    import Lazy.LList as LL
 
     tree (tree "foo" <| LL.fromList [ singleton "bar"]) (LL.fromList [ singleton <| singleton "baz" ])
         |> flatten
@@ -246,7 +244,9 @@ flatten (Tree (Tree item c) children) =
 
     import Lazy.LList as LL
 
-    tree "foo" (LL.fromList [ singleton "bar", singleton "baz" ])
+    singleton "foo"
+        |> insert (singleton "bar")
+        |> insert (singleton "baz")
         |> andThen (\a -> tree a <| LL.fromList [ singleton <| a ++ " fighter" ])
         |> children
     --> [ "foo fighter", "bar", "baz" ]
@@ -258,8 +258,6 @@ andThen fc =
 
 
 {-| Insert tree as children tree
-
-    import Lazy.LList as LL
 
     singleton 1
         |> insert (singleton 2)
