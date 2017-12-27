@@ -1,6 +1,6 @@
 module Lazy.Tree.Zipper
     exposing
-        ( BreadCrumb
+        ( Breadcrumb
         , Zipper
         , attempt
         , attemptOpenPath
@@ -26,7 +26,7 @@ module Lazy.Tree.Zipper
 
 # Types
 
-@docs BreadCrumb, Zipper, fromTree
+@docs Breadcrumb, Zipper, fromTree
 
 
 # Query
@@ -39,24 +39,24 @@ module Lazy.Tree.Zipper
 @docs map, open, openPath, attemptOpenPath, up, upwards, root
 
 
-# BreadCrumbs
+# Breadcrumbs
 
 @docs breadCrumbs
 
 -}
 
-import Lazy.List as LL exposing ((+++), (:::), LazyList)
+import Lazy.LList as LL exposing (LList)
 import Lazy.Tree as Tree exposing (Forest, Tree)
 
 
 {-| -}
-type alias BreadCrumb a =
+type alias Breadcrumb a =
     ( Forest a, a, Forest a )
 
 
 {-| -}
 type alias Zipper a =
-    ( Tree a, List (BreadCrumb a) )
+    ( Tree a, List (Breadcrumb a) )
 
 
 {-| Init Zipper for Tree
@@ -93,19 +93,17 @@ current =
 {-| Get Children of current Tree
 
     import Lazy.Tree as T
-    import Lazy.List as LL
 
     T.singleton "foo"
         |> fromTree
         |> insert (T.singleton "bar")
         |> children
-        |> LL.toList
     --> [ "bar" ]
 
 -}
-children : Zipper a -> LazyList a
+children : Zipper a -> List a
 children =
-    LL.map Tree.item << Tree.children << Tuple.first
+    Tree.children << Tuple.first
 
 
 {-| Detect if zipper is focused on root tree
@@ -126,14 +124,12 @@ isRoot =
 {-| Insert sub Tree to current Tree
 
     import Lazy.Tree as T
-    import Lazy.List as LL
 
     T.singleton "foo"
         |> fromTree
         |> insert (T.singleton "bar")
         |> insert (T.singleton "baz")
         |> children
-        |> LL.toList
     --> [ "bar", "baz" ]
 
 -}
@@ -147,7 +143,6 @@ insert tree ( t, breadcrumbs ) =
 Returns Nothing if root node is removed.
 
     import Lazy.Tree as T
-    import Lazy.List as LL
 
     T.singleton "foo"
         |> fromTree
@@ -170,7 +165,7 @@ delete ( tree, breadcrumbs ) =
             Nothing
 
         ( left, parent, right ) :: tail ->
-            Just ( Tree.tree parent (left +++ right), tail )
+            Just ( Tree.tree parent (LL.append left right), tail )
 
 
 {-| Replace Current tree with new one
@@ -270,7 +265,7 @@ up ( item, breadcrumbs ) =
             Nothing
 
         ( left, parent, right ) :: tail ->
-            Just ( Tree.tree parent (left +++ (item ::: right)), tail )
+            Just ( Tree.tree parent (LL.append left (LL.cons item right)), tail )
 
 
 {-| Go upwards n times.
@@ -371,7 +366,7 @@ open predicate ( tree, breadcrumbs ) =
             Tree.item tree
 
         children =
-            Tree.children tree
+            Tree.descendants tree
 
         ( left, item, right ) =
             cutForest predicate children
@@ -455,7 +450,7 @@ breadCrumbs =
 -- Private
 
 
-breadCrumbsMap : (a -> b) -> List (BreadCrumb a) -> List (BreadCrumb b)
+breadCrumbsMap : (a -> b) -> List (Breadcrumb a) -> List (Breadcrumb b)
 breadCrumbsMap predicate =
     List.map (\( pre, item, after ) -> ( Tree.forestMap predicate pre, predicate item, Tree.forestMap predicate after ))
 
@@ -474,7 +469,7 @@ cutForest_ acc predicate forest =
             if predicate <| Tree.item head then
                 ( acc, Just head, LL.fromList tail )
             else
-                cutForest_ (head ::: acc) predicate (LL.fromList tail)
+                cutForest_ (LL.cons head acc) predicate (LL.fromList tail)
 
 
 cutForest : (a -> Bool) -> Forest a -> ( Forest a, Maybe (Tree a), Forest a )
