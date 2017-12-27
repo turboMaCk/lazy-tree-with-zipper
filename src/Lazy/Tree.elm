@@ -358,6 +358,4 @@ constructTree isParent list item =
 
 fromList_ : Maybe a -> (Maybe a -> a -> Bool) -> List a -> Forest a
 fromList_ parent isParent list =
-    LL.fromList <|
-        List.map (constructTree isParent list) <|
-            List.filter (isParent parent) list
+    LL.llist (List.map (constructTree isParent list) << List.filter (isParent parent)) list
