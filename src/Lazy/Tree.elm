@@ -209,33 +209,42 @@ map2 predicate (Tree a1 f1) (Tree a2 f2) =
     tree (predicate a1 a2) <| forestMap2 predicate f1 f2
 
 
-{-| Filter Tree by given function
+{-| Filter Tree children by given function
 
-This function goes from root downwards.
+This function goes from children of root downwards.
 This means that nodes that doesn't satisfy predicate
 are excluded and filter is never performed over their children
 even if on those it might pass.
 
     tree 1 (LL.fromList [ singleton 2, singleton 3, singleton 4 ])
         |> filter ((>) 4)
-        |> Maybe.map children
-    --> Just [ 2, 3 ]
+        |> children
+    --> [ 2, 3 ]
 
-    tree 1 (LL.fromList [ singleton 2, singleton 3, singleton 4 ])
-        |> filter ((<) 1)
-        |> Maybe.map children
-    --> Nothing
+    tree 1 (LL.fromList [ insert (singleton 5) <| singleton 2, insert (singleton 6) <| singleton 3, singleton 4 ])
+        |> filter ((<) 2)
+        |> descendants
+        |> LL.map children
+        |> LL.toList
+    --> [ [ 6 ], [] ]
 
 -}
-filter : (a -> Bool) -> Tree a -> Maybe (Tree a)
+filter : (a -> Bool) -> Tree a -> Tree a
 filter predicate (Tree item c) =
+    tree item <| LL.filterMap (filter_ predicate) c
+
+
+filter_ : (a -> Bool) -> Tree a -> Maybe (Tree a)
+filter_ predicate (Tree item c) =
     if predicate item then
-        Just <| tree item <| LL.filterMap (filter predicate) c
+        Just <| tree item <| LL.filterMap (filter_ predicate) c
     else
         Nothing
 
 
-{-| Filter map on Tree. Works similarly to [filter](#filter)
+{-| Filter map on Tree. Works similarly to [filter](#filter).
+In case offilterMap even root node as to satisfy predicate otherwise
+Nothing is returned.
 
     tree 1 (LL.fromList [ singleton 2, singleton 3, singleton 4 ])
         |> filterMap (\a -> if a < 4 then Just (a * 2) else Nothing)
@@ -243,7 +252,7 @@ filter predicate (Tree item c) =
     --> Just [ 4, 6 ]
 
     tree 1 (LL.fromList [ singleton 2, singleton 3, singleton 4 ])
-        |> filterMap (\a -> if a > 1 then Just (a * 2) else Nothing)
+        |> filterMap (\a -> if a > 2 then Just (a * 2) else Nothing)
         |> Maybe.map children
     --> Nothing
 
@@ -251,7 +260,7 @@ filter predicate (Tree item c) =
 filterMap : (a -> Maybe b) -> Tree a -> Maybe (Tree b)
 filterMap predicate (Tree item c) =
     predicate item
-        |> Maybe.map (flip tree <| LL.filterMap (filterMap predicate) c)
+        |> Maybe.map (\i -> tree i <| LL.filterMap (filterMap predicate) c)
 
 
 {-| Chain map operations

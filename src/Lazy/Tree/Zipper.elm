@@ -8,6 +8,7 @@ module Lazy.Tree.Zipper
         , children
         , current
         , delete
+        , filter
         , fromTree
         , insert
         , isRoot
@@ -29,19 +30,19 @@ module Lazy.Tree.Zipper
 @docs Breadcrumb, Zipper, fromTree
 
 
-# Operations
-
-@docs insert, delete, update, setTree
-
-
 # Query
 
 @docs current, children, isRoot, attempt
 
 
+# Operations
+
+@docs insert, delete, update, setTree, open, openPath, attemptOpenPath, up, upwards, root
+
+
 # Transformations
 
-@docs map, open, openPath, attemptOpenPath, up, upwards, root
+@docs map, filter
 
 
 # Breadcrumbs
@@ -219,6 +220,40 @@ update =
 map : (a -> b) -> Zipper a -> Zipper b
 map predicate ( tree, breadcrumbs ) =
     ( Tree.map predicate tree, breadCrumbsMap predicate breadcrumbs )
+
+
+{-| Performs filter on current Tree in zipper. See `Tree.filter` for more informations.
+
+    import Lazy.LList as LL
+
+    T.tree 1 (LL.fromList [ T.singleton 2, T.singleton 3, T.singleton 4 ])
+        |> fromTree
+        |> filter ((>) 4)
+        |> children
+    --> [ 2, 3 ]
+
+    T.tree 1 (LL.fromList [ T.singleton 2, T.singleton 3, T.singleton 4 ])
+        |> fromTree
+        |> attempt (open ((==) 1))
+        |> filter ((<) 2)
+        |> root
+        |> children
+    --> [ 3, 4 ]
+
+    T.tree 1 (LL.fromList [ T.insert (T.singleton 5) <| T.singleton 2, T.insert (T.singleton 6) <| T.singleton 3, T.singleton 4 ])
+        |> fromTree
+        |> attempt (open ((==) 1))
+        |> filter ((<) 2)
+        |> Tuple.first
+        |> T.descendants
+        |> LL.andThen (LL.map T.item << T.descendants)
+        |> LL.toList
+    --> [ 6 ]
+
+-}
+filter : (a -> Bool) -> Zipper a -> Zipper a
+filter predicate =
+    Tuple.mapFirst (Tree.filter predicate)
 
 
 {-| Attempt to perform action over zipper and return original zipper in cases where this action isn't valid.
