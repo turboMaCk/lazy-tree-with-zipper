@@ -21,7 +21,7 @@ module Lazy.Tree.Zipper
         , upwards
         )
 
-{-| Zipper implementation for Lazy Rose Tree
+{-| Zipper implementation for Lazy Rose Tree.
 
 
 # Types
@@ -29,17 +29,17 @@ module Lazy.Tree.Zipper
 @docs Breadcrumb, Zipper, fromTree
 
 
+# Operations
+
+@docs insert, delete, update, setTree
+
+
 # Query
 
 @docs current, children, isRoot, attempt
 
 
-# Modify
-
-@docs insert, delete, update, setTree,
-
-
-# Operations
+# Transformations
 
 @docs map, open, openPath, attemptOpenPath, up, upwards, root
 

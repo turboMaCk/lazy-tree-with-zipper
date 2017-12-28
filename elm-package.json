@@ -8,7 +8,8 @@
     ],
     "exposed-modules": [
         "Lazy.Tree",
-        "Lazy.Tree.Zipper"
+        "Lazy.Tree.Zipper",
+        "Lazy.LList"
     ],
     "dependencies": {
         "elm-lang/core": "5.1.1 <= v < 6.0.0",
