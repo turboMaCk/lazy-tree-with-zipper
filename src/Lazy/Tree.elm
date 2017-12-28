@@ -6,6 +6,8 @@ module Lazy.Tree
         , andThen
         , children
         , descendants
+        , filter
+        , filterMap
         , flatten
         , forestMap
         , forestMap2
@@ -39,7 +41,7 @@ module Lazy.Tree
 
 # Transforms
 
-@docs map, map2, andMap, flatten, andThen
+@docs map, map2, filter, filterMap, andMap, flatten, andThen
 
 
 # Forest
@@ -205,6 +207,51 @@ map predicate (Tree a forest) =
 map2 : (a -> b -> c) -> Tree a -> Tree b -> Tree c
 map2 predicate (Tree a1 f1) (Tree a2 f2) =
     tree (predicate a1 a2) <| forestMap2 predicate f1 f2
+
+
+{-| Filter Tree by given function
+
+This function goes from root downwards.
+This means that nodes that doesn't satisfy predicate
+are excluded and filter is never performed over their children
+even if on those it might pass.
+
+    tree 1 (LL.fromList [ singleton 2, singleton 3, singleton 4 ])
+        |> filter ((>) 4)
+        |> Maybe.map children
+    --> Just [ 2, 3 ]
+
+    tree 1 (LL.fromList [ singleton 2, singleton 3, singleton 4 ])
+        |> filter ((<) 4)
+        |> Maybe.map children
+    --> Nothing
+
+-}
+filter : (a -> Bool) -> Tree a -> Maybe (Tree a)
+filter predicate (Tree item c) =
+    if predicate item then
+        Just <| tree item <| LL.filterMap (filter predicate) c
+    else
+        Nothing
+
+
+{-| Filter map on Tree. Works similarly to [filter](#filter)
+
+    tree 1 (LL.fromList [ singleton 2, singleton 3, singleton 4 ])
+        |> filterMap (\a -> if a < 4 then Just (a * 2) else Nothing)
+        |> Maybe.map children
+    --> Just [ 4, 6 ]
+
+    tree 1 (LL.fromList [ singleton 2, singleton 3, singleton 4 ])
+        |> filterMap (\a -> if a > 4 then Just (a * 2) else Nothing)
+        |> Maybe.map children
+    --> Nothing
+
+-}
+filterMap : (a -> Maybe b) -> Tree a -> Maybe (Tree b)
+filterMap predicate (Tree item c) =
+    predicate item
+        |> Maybe.map (flip tree <| LL.filterMap (filterMap predicate) c)
 
 
 {-| Chain map operations

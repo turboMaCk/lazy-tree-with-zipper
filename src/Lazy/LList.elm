@@ -6,6 +6,7 @@ module Lazy.LList
         , cons
         , empty
         , filter
+        , filterMap
         , flatten
         , foldl
         , foldr
@@ -39,7 +40,7 @@ It is not Lazy List implementation and it has different charaktericstics.
 
 # Transformations
 
-@docs map, map2, filter, foldr, foldl, flatten, andThen
+@docs map, map2, filter, filterMap, foldr, foldl, flatten, andThen
 
 -}
 
@@ -197,6 +198,19 @@ cons a =
 filter : (a -> Bool) -> LList a -> LList a
 filter predicate =
     Lazy.map (List.filter predicate)
+
+
+{-| Similar to List.filterMap but for LList
+
+    (cons 1 <| cons 2 <| cons 3 empty)
+        |> filterMap (\a -> if 1 < a then Just (2 * a) else Nothing)
+        |> toList
+    --> [ 4, 6 ]
+
+-}
+filterMap : (a -> Maybe b) -> LList a -> LList b
+filterMap predicate =
+    Lazy.map (List.filterMap predicate)
 
 
 {-| Same as List.foldr but for LLists
