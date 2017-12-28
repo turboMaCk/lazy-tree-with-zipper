@@ -194,6 +194,7 @@ cons a =
     llist (List.range 0) 3
         |> foldr (::) []
     --> [ 0, 1, 2, 3 ]
+
 -}
 foldr : (a -> b -> b) -> b -> LList a -> b
 foldr predicate acc =
@@ -209,6 +210,7 @@ foldr predicate acc =
     llist (List.range 0) 3
         |> foldl (::) []
     --> [ 3, 2, 1, 0 ]
+
 -}
 foldl : (a -> b -> b) -> b -> LList a -> b
 foldl predicate acc =
@@ -221,7 +223,8 @@ foldl predicate acc =
        |> flatten
        |> toList
     --> [ "foo", "bar", "baz" ]
- -}
+
+-}
 flatten : LList (LList a) -> LList a
 flatten =
     foldr append empty
@@ -233,6 +236,7 @@ flatten =
         |> andThen (\a -> cons a <| singleton (a ++ " fighter" ))
         |> toList
     --> [ "foo", "foo fighter", "bar", "bar fighter", "baz", "baz fighter" ]
+
 -}
 andThen : (a -> LList b) -> LList a -> LList b
 andThen predicate =
