@@ -222,7 +222,7 @@ even if on those it might pass.
     --> Just [ 2, 3 ]
 
     tree 1 (LL.fromList [ singleton 2, singleton 3, singleton 4 ])
-        |> filter ((<) 4)
+        |> filter ((<) 1)
         |> Maybe.map children
     --> Nothing
 
@@ -243,7 +243,7 @@ filter predicate (Tree item c) =
     --> Just [ 4, 6 ]
 
     tree 1 (LL.fromList [ singleton 2, singleton 3, singleton 4 ])
-        |> filterMap (\a -> if a > 4 then Just (a * 2) else Nothing)
+        |> filterMap (\a -> if a > 1 then Just (a * 2) else Nothing)
         |> Maybe.map children
     --> Nothing
 
