@@ -4,6 +4,7 @@ module Lazy.Tree
         , Tree
         , andMap
         , andThen
+        , build
         , children
         , descendants
         , filter
@@ -24,9 +25,9 @@ module Lazy.Tree
 {-| Lazy Rose Tree implementation
 
 
-# Types
+# Types & Constructors
 
-@docs Tree, Forest, tree, singleton, fromList
+@docs Tree, Forest, singleton, tree, build, fromList
 
 
 # Query
@@ -102,6 +103,39 @@ singleton a =
 tree : a -> Forest a -> Tree a
 tree =
     Tree
+
+
+{-| Build `Tree` using custom constructor.
+
+This can be for instance used to build tree from other recursive data structre:
+
+    type Item = Item String (List Item)
+
+    getChildren (Item _ children) = children
+
+    Item "foo" [ Item "bar" [], Item "baz" []]
+        |> from getChildren
+        |> children
+    -> [ Item "bar" [], Item "baz" [] ]
+
+Or you can use this function for any sort of custom lookups:
+
+    import Dict exposing (Dict)
+
+    rootItem : String
+    rootItem = "foo"
+
+    childrenDict : Dict String (List String)
+    childrenDict = Dict.fromList [ ("foo", [ "bar", "baz" ]) ]
+
+    from (Maybe.withDefault [] << flip Dict.get childrenDict) rootItem
+        |> children
+    --> [ "bar", "baz" ]
+
+-}
+build : (a -> List a) -> a -> Tree a
+build getChildren root =
+    tree root <| LL.map (from getChildren) <| LL.llist getChildren root
 
 
 {-| Check if tree doesn't have any child.
