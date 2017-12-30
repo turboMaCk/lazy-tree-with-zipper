@@ -94,7 +94,7 @@ singleton a =
     --> "foo"
 
 
-    fromList (\m _ -> m == Nothing) [ "bar", "baz" ]
+    fromList (\m l -> if m == Nothing then l else []) [ "bar", "baz" ]
         |> tree "foo"
         |> children
     --> [ "bar", "baz" ]
@@ -381,7 +381,7 @@ insert t (Tree item c) =
     , { id = 2, parent = Nothing }
     , { id = 3, parent = Just 1 }
     ]
-        |> fromList (\p i -> Maybe.map .id p == i.parent)
+        |> fromList (\p -> List.filter (\i -> Maybe.map .id p == i.parent))
         |> LL.map (.id << item)
         |> LL.toList
     --> [ 1, 2 ]
@@ -392,16 +392,26 @@ insert t (Tree item c) =
     , { id = 4, parent = Just 1 }
     , { id = 5, parent = Just 2 }
     ]
-        |> fromList (\p i -> Maybe.map .id p == i.parent)
+        |> fromList (\p -> List.filter (\i -> Maybe.map .id p == i.parent))
         |> LL.andThen descendants
         |> LL.map (.id << item)
         |> LL.toList
     --> [ 3, 4, 5 ]
 
 -}
-fromList : (Maybe a -> a -> Bool) -> List a -> Forest a
-fromList isParent =
-    fromList_ Nothing isParent
+fromList : (Maybe a -> List a -> List a) -> List a -> Forest a
+fromList construct =
+    fromList_ Nothing construct
+
+
+constructTree : (Maybe a -> List a -> List a) -> List a -> a -> Tree a
+constructTree construct list item =
+    tree item <| fromList_ (Just item) construct list
+
+
+fromList_ : Maybe a -> (Maybe a -> List a -> List a) -> List a -> Forest a
+fromList_ parent construct list =
+    LL.llist (List.map (constructTree construct list) << construct parent) list
 
 
 {-| Map function over forest
@@ -409,7 +419,7 @@ fromList isParent =
     import Lazy.LList as LL
 
     [ 1, 2, 3 ]
-        |> fromList (\m _ -> m == Nothing)
+        |> fromList (\m l -> if m == Nothing then l else [])
         |> forestMap ((+) 1)
         |> LL.map item
         |> LL.toList
@@ -426,8 +436,8 @@ forestMap predicate =
     import Lazy.LList as LL
 
     [ 1, 2, 3 ]
-        |> fromList (\m _ -> m == Nothing)
-        |> forestMap2 (+) (fromList (\m _ -> m == Nothing) [1, 2])
+        |> fromList (\m l -> if m == Nothing then l else [])
+        |> forestMap2 (+) (fromList (\m l -> if m == Nothing then l else []) [1, 2])
         |> LL.map item
         |> LL.toList
     --> [ 2, 4 ]
@@ -436,17 +446,3 @@ forestMap predicate =
 forestMap2 : (a -> b -> c) -> Forest a -> Forest b -> Forest c
 forestMap2 predicate =
     LL.map2 (map2 predicate)
-
-
-
--- Private
-
-
-constructTree : (Maybe a -> a -> Bool) -> List a -> a -> Tree a
-constructTree isParent list item =
-    tree item <| fromList_ (Just item) isParent list
-
-
-fromList_ : Maybe a -> (Maybe a -> a -> Bool) -> List a -> Forest a
-fromList_ parent isParent list =
-    LL.llist (List.map (constructTree isParent list) << List.filter (isParent parent)) list
