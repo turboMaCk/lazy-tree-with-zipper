@@ -114,7 +114,7 @@ This can be for instance used to build tree from other recursive data structre:
     getChildren (Item _ children) = children
 
     Item "foo" [ Item "bar" [], Item "baz" []]
-        |> from getChildren
+        |> build getChildren
         |> children
     -> [ Item "bar" [], Item "baz" [] ]
 
@@ -128,14 +128,14 @@ Or you can use this function for any sort of custom lookups:
     childrenDict : Dict String (List String)
     childrenDict = Dict.fromList [ ("foo", [ "bar", "baz" ]) ]
 
-    from (Maybe.withDefault [] << flip Dict.get childrenDict) rootItem
+    build (Maybe.withDefault [] << flip Dict.get childrenDict) rootItem
         |> children
     --> [ "bar", "baz" ]
 
 -}
 build : (a -> List a) -> a -> Tree a
 build getChildren root =
-    tree root <| LL.map (from getChildren) <| LL.llist getChildren root
+    tree root <| LL.map (build getChildren) <| LL.llist getChildren root
 
 
 {-| Check if tree doesn't have any child.
