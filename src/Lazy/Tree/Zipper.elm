@@ -341,7 +341,7 @@ up ( item, breadcrumbs ) =
             Nothing
 
         ( left, parent, right ) :: tail ->
-            Just ( Tree.tree parent (LL.append left (LL.cons item right)), tail )
+            Just ( Tree.tree parent (LL.append (LL.reverse left) (LL.cons item right)), tail )
 
 
 {-| Perform [`up`](#up) n times.
@@ -585,4 +585,4 @@ sliceForest_ acc left right =
                 newItem =
                     ( left, head, LL.fromList tail )
             in
-            sliceForest_ (newItem :: acc) (LL.append left (LL.singleton head)) (LL.fromList tail)
+            sliceForest_ (newItem :: acc) (LL.cons head left) (LL.fromList tail)

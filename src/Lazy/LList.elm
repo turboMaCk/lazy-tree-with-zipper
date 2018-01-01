@@ -17,6 +17,7 @@ module Lazy.LList
         , llist
         , map
         , map2
+        , reverse
         , singleton
         , toList
         )
@@ -44,7 +45,7 @@ just in case some additional user extensions will need it.
 
 # Transformations
 
-@docs map, map2, filter, filterMap, foldr, foldl, lazyFoldr, lazyFoldl, concat, andThen
+@docs map, map2, filter, filterMap, reverse, foldr, foldl, lazyFoldr, lazyFoldl, concat, andThen
 
 -}
 
@@ -240,6 +241,21 @@ This function is performed lazily.
 filterMap : (a -> Maybe b) -> LList a -> LList b
 filterMap predicate =
     Lazy.map (List.filterMap predicate)
+
+
+{-| Reverse `LList`.
+
+    fromList [ 1, 2, 3 ]
+        |> reverse
+        |> toList
+    --> [ 3, 2, 1 ]
+
+This function is performed lazily.
+
+-}
+reverse : LList a -> LList a
+reverse =
+    Lazy.map List.reverse
 
 
 {-| Same as `List.foldr` but for `LLists`.
