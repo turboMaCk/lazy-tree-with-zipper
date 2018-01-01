@@ -11,6 +11,7 @@ module Lazy.LList
         , foldl
         , foldr
         , fromList
+        , head
         , isEmpty
         , lazyFoldl
         , lazyFoldr
@@ -19,6 +20,7 @@ module Lazy.LList
         , map2
         , reverse
         , singleton
+        , tail
         , toList
         )
 
@@ -40,7 +42,7 @@ just in case some additional user extensions will need it.
 
 # Query
 
-@docs isEmpty, toList
+@docs isEmpty, toList, head, tail
 
 
 # Transformations
@@ -181,6 +183,45 @@ This function forces evaluation.
 toList : LList a -> List a
 toList =
     Lazy.force
+
+
+{-| Get first element from `LList`.
+
+    head empty
+    --> Nothing
+
+    llist (List.range 0) 2
+       |> head
+    --> Just 0
+
+This function forces evaluation.
+
+-}
+head : LList a -> Maybe a
+head =
+    List.head << toList
+
+
+{-| Get first element from `LList`.
+
+    tail empty
+    --> Nothing
+
+    tail (singleton "foo")
+        |> Maybe.map toList
+    --> Just []
+
+    llist (List.range 0) 2
+        |> tail
+        |> Maybe.map toList
+    --> Just [ 1, 2 ]
+
+This function forces evaluation.
+
+-}
+tail : LList a -> Maybe (LList a)
+tail =
+    Maybe.map fromList << List.tail << toList
 
 
 {-| Map function over `LList`.
