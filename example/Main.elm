@@ -40,7 +40,7 @@ items =
 {-| Zipper of pair where first value means `isOpen` and second contain Item details.
 -}
 type alias Model =
-    { zipper : Zipper ( Bool, Item ) }
+    Zipper ( Bool, Item )
 
 
 init : Model
@@ -51,9 +51,8 @@ init =
     in
     List.map ((,) False) items
         |> Tree.fromList (\p ( _, i ) -> Maybe.map (.id << Tuple.second) p == i.parent)
-        |> Tree.tree (False, root)
+        |> Tree.tree ( False, root )
         |> Zipper.fromTree
-        |> Model
 
 
 
@@ -67,7 +66,6 @@ type Msg
 update : Msg -> Model -> Model
 update (Toggle zipper) model =
     Zipper.updateItem (\( s, i ) -> ( not s, i )) zipper
-        |> Model
 
 
 
@@ -75,7 +73,7 @@ update (Toggle zipper) model =
 
 
 view : Model -> Html Msg
-view { zipper } =
+view zipper =
     Html.ul [] [ viewLevel (Zipper.root zipper) ]
 
 

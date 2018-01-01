@@ -551,6 +551,11 @@ breadCrumbsMap predicate =
 -- Tree helpers
 
 
+cutForest : (a -> Bool) -> Forest a -> ( Forest a, Maybe (Tree a), Forest a )
+cutForest =
+    cutForest_ LL.empty
+
+
 cutForest_ : Forest a -> (a -> Bool) -> Forest a -> ( Forest a, Maybe (Tree a), Forest a )
 cutForest_ acc predicate forest =
     case LL.toList forest of
@@ -562,11 +567,6 @@ cutForest_ acc predicate forest =
                 ( acc, Just head, LL.fromList tail )
             else
                 cutForest_ (LL.cons head acc) predicate (LL.fromList tail)
-
-
-cutForest : (a -> Bool) -> Forest a -> ( Forest a, Maybe (Tree a), Forest a )
-cutForest =
-    cutForest_ LL.empty
 
 
 sliceForest : Forest a -> List ( Forest a, Tree a, Forest a )
