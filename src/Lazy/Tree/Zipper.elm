@@ -126,7 +126,7 @@ children =
     Tree.children << Tuple.first
 
 
-{-| Detect if `Zipper` is focused on root `Tree`.
+{-| Check if `Zipper` is focused on root `Tree`.
 
     import Lazy.Tree as T
 
@@ -141,7 +141,22 @@ isRoot =
     List.isEmpty << Tuple.second
 
 
-{-| -}
+{-| Check if current `Tree` in `Zipper` is empty.
+
+    import Lazy.Tree as T
+
+    T.singleton "foo"
+        |> fromTree
+        |> isEmpty
+    --> True
+
+    T.singleton "foo"
+        |> fromTree
+        |> insert (T.singleton "bar")
+        |> isEmpty
+    --> False
+
+-}
 isEmpty : Zipper a -> Bool
 isEmpty =
     Tree.isEmpty << Tuple.first
@@ -484,7 +499,19 @@ openPath predicate path zipper =
     List.foldl (\i acc -> Result.andThen (toResult i << (open <| predicate i)) acc) (Ok zipper) path
 
 
-{-| -}
+{-| Get `List` of `Zipper`s for all children of current `Zipper`
+
+    import Lazy.Tree as T
+
+    T.singleton "foo"
+        |> fromTree
+        |> insert (T.singleton "bar")
+        |> insert (T.singleton "baz")
+        |> openAll
+        |> List.map current
+    --> [ "bar", "baz" ]
+
+-}
 openAll : Zipper a -> List (Zipper a)
 openAll ( tree, breadcrumbs ) =
     sliceForest (Tree.descendants tree)
