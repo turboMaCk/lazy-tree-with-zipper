@@ -57,7 +57,7 @@ type alias LList a =
     Lazy (List a)
 
 
-{-| Init empty `LList`
+{-| Init empty `LList`.
 
     toList empty
     --> []
@@ -68,7 +68,7 @@ empty =
     llist identity []
 
 
-{-| Init singleton `LList`
+{-| Init singleton `LList`.
 
     singleton "foo"
         |> toList
@@ -80,7 +80,7 @@ singleton =
     llist List.singleton
 
 
-{-| Init `LList` using constructor
+{-| Init `LList` using constructor.
 
 `LList` is init as a function from `a -> List b`.
 Evaluation of this function is lazy and happens in time when
@@ -104,7 +104,7 @@ llist constructor arg =
     Lazy.lazy <| \() -> constructor arg
 
 
-{-| Construct `LList` from `List`
+{-| Construct `LList` from `List`.
 
     fromList [ "foo", "bar", "baz" ]
         |> toList
@@ -116,7 +116,7 @@ fromList =
     llist identity
 
 
-{-| Add element to `LList`
+{-| Add element to `LList`.
 
     empty
         |> cons "bar"
@@ -132,7 +132,7 @@ cons a =
     Lazy.map ((::) a)
 
 
-{-| Append `LList` to `LList`
+{-| Append `LList` to `LList`.
 
     append (singleton "foo") (fromList [ "bar", "baz" ])
         |> toList
@@ -146,7 +146,7 @@ append =
     Lazy.map2 (++)
 
 
-{-| Check if `LList` is empty
+{-| Check if `LList` is empty.
 
     isEmpty empty
     --> True
@@ -166,7 +166,7 @@ isEmpty =
     List.isEmpty << toList
 
 
-{-| Build `List` from `LList`
+{-| Build `List` from `LList`.
 
     toList empty
     --> []
@@ -182,7 +182,7 @@ toList =
     Lazy.force
 
 
-{-| Map function over `LList`
+{-| Map function over `LList`.
 
     llist (List.range 0) 5
         |> map ((*) 2)
@@ -197,7 +197,7 @@ map predicate =
     Lazy.map (List.map predicate)
 
 
-{-| Map two functions over `LList`
+{-| Map two functions over `LList`.
 
     llist (List.range 0) 5
         |> map2 (+) (llist (List.range 0) 5)
@@ -212,7 +212,7 @@ map2 constructor =
     Lazy.map2 (List.map2 constructor)
 
 
-{-| Filter `LList`
+{-| Filter `LList`.
 
     (cons 1 <| cons 2 <| cons 3 empty)
         |> filter ((<) 1)
@@ -227,7 +227,7 @@ filter predicate =
     Lazy.map (List.filter predicate)
 
 
-{-| Similar to `List.filterMap` but for `LList`
+{-| Similar to `List.filterMap` but for `LList`.
 
     (cons 1 <| cons 2 <| cons 3 empty)
         |> filterMap (\a -> if 1 < a then Just (2 * a) else Nothing)
@@ -242,7 +242,7 @@ filterMap predicate =
     Lazy.map (List.filterMap predicate)
 
 
-{-| Same as `List.foldr` but for `LLists`
+{-| Same as `List.foldr` but for `LLists`.
 
     llist (List.range 0) 5
         |> foldr (+) 0
@@ -260,7 +260,7 @@ foldr predicate acc =
     List.foldr predicate acc << toList
 
 
-{-| Same as `List.foldl` but for `LLists`
+{-| Same as `List.foldl` but for `LLists`.
 
     llist (List.range 0) 5
         |> foldl (+) 0
@@ -316,7 +316,7 @@ lazyFoldl predicate acc =
     Lazy.andThen (List.foldl predicate acc)
 
 
-{-| Flatten `LList`
+{-| Flatten `LList`.
 
     fromList [ singleton "foo", cons "bar" <| singleton "baz" ]
        |> concat
@@ -331,7 +331,7 @@ concat =
     lazyFoldr append empty
 
 
-{-| Map `LList` construction over `LList`
+{-| Map `LList` construction over `LList`.
 
     cons "foo" (cons "bar" <| singleton "baz")
         |> andThen (\a -> cons a <| singleton (a ++ " fighter" ))
