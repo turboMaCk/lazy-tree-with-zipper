@@ -1,0 +1,107 @@
+module Main exposing (..)
+
+import Html exposing (Html)
+import Html.Events as Events
+import Lazy.Tree as Tree
+import Lazy.Tree.Zipper as Zipper exposing (Zipper)
+
+
+main : Program Never Model Msg
+main =
+    Html.beginnerProgram
+        { model = init
+        , update = update
+        , view = view
+        }
+
+
+
+-- Model
+
+
+type alias Item =
+    { id : Int
+    , name : String
+    , parent : Maybe Int
+    }
+
+
+items : List Item
+items =
+    [ { id = 1, name = "Foo", parent = Nothing }
+    , { id = 2, name = "Bar", parent = Nothing }
+    , { id = 3, name = "Baz", parent = Nothing }
+    , { id = 4, name = "Fobar", parent = Just 1 }
+    , { id = 5, name = "Bar child", parent = Just 2 }
+    , { id = 6, name = "Foobar child", parent = Just 4 }
+    ]
+
+
+{-| Zipper of pair where first value means `isOpen` and second contain Item details.
+-}
+type alias Model =
+    { zipper : Zipper ( Bool, Item ) }
+
+
+init : Model
+init =
+    let
+        root =
+            { id = -1, name = "root", parent = Nothing }
+    in
+    List.map ((,) False) items
+        |> Tree.fromList (\p ( _, i ) -> Maybe.map (.id << Tuple.second) p == i.parent)
+        |> Tree.tree (False, root)
+        |> Zipper.fromTree
+        |> Model
+
+
+
+-- Update
+
+
+type Msg
+    = Toggle (Zipper ( Bool, Item ))
+
+
+update : Msg -> Model -> Model
+update (Toggle zipper) model =
+    Zipper.updateItem (\( s, i ) -> ( not s, i )) zipper
+        |> Model
+
+
+
+-- View
+
+
+view : Model -> Html Msg
+view { zipper } =
+    Html.ul [] [ viewLevel (Zipper.root zipper) ]
+
+
+viewLevel : Zipper ( Bool, Item ) -> Html Msg
+viewLevel zipper =
+    let
+        ( isOpen, item ) =
+            Zipper.current zipper
+    in
+    Html.li []
+        [ Html.a [ Events.onClick <| Toggle zipper ]
+            [ if not (Zipper.isEmpty zipper) then
+                Html.span []
+                    [ if isOpen then
+                        Html.text "- "
+                      else
+                        Html.text "+ "
+                    ]
+              else
+                Html.text ""
+            , Html.text item.name
+            ]
+        , Html.ul [] <|
+            if isOpen then
+                Zipper.openAll zipper
+                    |> List.map viewLevel
+            else
+                []
+        ]

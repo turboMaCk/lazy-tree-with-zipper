@@ -414,6 +414,11 @@ fromList isParent =
     fromList_ Nothing isParent
 
 
+fromList_ : Maybe a -> (Maybe a -> a -> Bool) -> List a -> Forest a
+fromList_ parent isParent list =
+    LL.llist (List.map (constructTree isParent list) << List.filter (isParent parent)) list
+
+
 {-| Map function over `Forest`.
 
     import Lazy.LList as LL
@@ -455,8 +460,3 @@ forestMap2 predicate =
 constructTree : (Maybe a -> a -> Bool) -> List a -> a -> Tree a
 constructTree isParent list item =
     tree item <| fromList_ (Just item) isParent list
-
-
-fromList_ : Maybe a -> (Maybe a -> a -> Bool) -> List a -> Forest a
-fromList_ parent isParent list =
-    LL.llist (List.map (constructTree isParent list) << List.filter (isParent parent)) list

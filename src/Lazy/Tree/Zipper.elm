@@ -11,14 +11,17 @@ module Lazy.Tree.Zipper
         , filter
         , fromTree
         , insert
+        , isEmpty
         , isRoot
         , map
         , open
+        , openAll
         , openPath
         , root
         , setTree
         , up
         , update
+        , updateItem
         , upwards
         )
 
@@ -41,12 +44,12 @@ Types within this module are exposed type aliases to make it easy extend default
 
 # Query
 
-@docs current, children, isRoot, attempt
+@docs current, children, isRoot, isEmpty, attempt
 
 
 # Operations
 
-@docs insert, delete, update, setTree, open, openPath, attemptOpenPath, up, upwards, root
+@docs insert, delete, update, updateItem, setTree, open, openPath, openAll, attemptOpenPath, up, upwards, root
 
 
 # Transformations
@@ -138,6 +141,12 @@ isRoot =
     List.isEmpty << Tuple.second
 
 
+{-| -}
+isEmpty : Zipper a -> Bool
+isEmpty =
+    Tree.isEmpty << Tuple.first
+
+
 {-| Insert sub `Tree` into current `Tree` in `Zipper`.
 
     import Lazy.Tree as T
@@ -215,6 +224,22 @@ setTree tree ( _, breadcrumbs ) =
 update : (Tree a -> Tree a) -> Zipper a -> Zipper a
 update =
     Tuple.mapFirst
+
+
+{-| Update current `Tree` using given function.
+
+    import Lazy.Tree as T
+
+    T.singleton "foo"
+        |> fromTree
+        |> updateItem (\i -> i ++ " fighter")
+        |> current
+    --> "foo fighter"
+
+-}
+updateItem : (a -> a) -> Zipper a -> Zipper a
+updateItem predicate ( tree, breadcrumbs ) =
+    ( Tree.tree (predicate <| Tree.item tree) <| Tree.descendants tree, breadcrumbs )
 
 
 {-| Map function over `Zipper`.
@@ -459,6 +484,13 @@ openPath predicate path zipper =
     List.foldl (\i acc -> Result.andThen (toResult i << (open <| predicate i)) acc) (Ok zipper) path
 
 
+{-| -}
+openAll : Zipper a -> List (Zipper a)
+openAll ( tree, breadcrumbs ) =
+    sliceForest (Tree.descendants tree)
+        |> List.map (\( left, t, right ) -> ( t, ( left, Tree.item tree, right ) :: breadcrumbs ))
+
+
 {-| Similar to [`openPath`](#openPath) but ingnore failed steps.
 
     import Lazy.Tree as T
@@ -535,3 +567,22 @@ cutForest_ acc predicate forest =
 cutForest : (a -> Bool) -> Forest a -> ( Forest a, Maybe (Tree a), Forest a )
 cutForest =
     cutForest_ LL.empty
+
+
+sliceForest : Forest a -> List ( Forest a, Tree a, Forest a )
+sliceForest =
+    sliceForest_ [] LL.empty
+
+
+sliceForest_ : List ( Forest a, Tree a, Forest a ) -> Forest a -> Forest a -> List ( Forest a, Tree a, Forest a )
+sliceForest_ acc left right =
+    case LL.toList right of
+        [] ->
+            List.reverse acc
+
+        head :: tail ->
+            let
+                newItem =
+                    ( left, head, LL.fromList tail )
+            in
+            sliceForest_ (newItem :: acc) (LL.append left (LL.singleton head)) (LL.fromList tail)
