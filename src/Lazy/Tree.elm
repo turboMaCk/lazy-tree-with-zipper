@@ -60,15 +60,15 @@ to lazily evaluate levels of Tree.
 import Lazy.LList as LL exposing (LList)
 
 
-{-| ** Be careful when comparing Trees using `(==)`.**
+{-| ** Be careful when comparing `Tree`s using `(==)`.**
 Due to use of lazyness `(==)` isn't reliable for comparing Trees.
 -}
 type Tree a
     = Tree a (Forest a)
 
 
-{-| ** Be careful when comparing Forests using `(==)`.**
-Due to use of lazyness `(==)` isn't reliable for comparing Trees.
+{-| ** Be careful when comparing `Forest`s using `(==)`.**
+Due to use of lazyness `(==)` isn't reliable for comparing Forests.
 -}
 type alias Forest a =
     LList (Tree a)
@@ -124,6 +124,8 @@ build getChildren root =
 
 
 {-| General `Tree` constructor.
+
+    import Lazy.LList as LL
 
     tree "foo" LL.empty
         |> item
@@ -234,7 +236,6 @@ map predicate (Tree a forest) =
         |> item
     --> 6
 
-
     import Lazy.LList as LL
 
     tree 1 (LL.fromList [ singleton 2, singleton 3, singleton 4 ])
@@ -255,13 +256,12 @@ This means that nodes that doesn't satisfy predicate
 are excluded and filter is never performed over their children
 even if on those it might pass.
 
+    import Lazy.LList as LL
+
     tree 1 (LL.fromList [ singleton 2, singleton 3, singleton 4 ])
         |> filter ((>) 4)
         |> children
     --> [ 2, 3 ]
-
-
-    import Lazy.List as LL
 
     tree 1 (LL.fromList [ insert (singleton 5) <| singleton 2, insert (singleton 6) <| singleton 3, singleton 4 ])
         |> filter ((<) 2)
