@@ -28,10 +28,10 @@ module Lazy.Tree.Zipper
 > for writing programs that traverse the structure arbitrarily and update its contents,
 > especially in purely functional programming languages.
 
-`Zipper` is an secret sauce that gives `Tree` real power.
-It provides easy way to query and modify the `Tree` in clever and very flexible way.
+`Zipper` is a secret sauce that gives `Tree` real power.
+It provides an easy way to query and modify the `Tree` in a clever and very flexible way.
 
-Types within this module are exposed type aliases to make it easy extand default functionality of `Zipper`.
+Types within this module are exposed type aliases to make it easy extend default functionality of `Zipper`.
 
 
 # Types

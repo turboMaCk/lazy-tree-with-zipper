@@ -21,8 +21,8 @@ module Lazy.LList
         , toList
         )
 
-{-| This module implement lazy construction of strict List.
-It is not Lazy List implementation and it has different charaktericstics.
+{-| This module implements lazy construction of strict List.
+It is not Lazy List implementation and it has different characteristics.
 It's mostly intended for internal purposes of this library and is exposed
 just in case some additional user extensions will need it.
 
