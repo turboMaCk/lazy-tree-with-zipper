@@ -33,7 +33,7 @@ of tree. This approach is the main approach to performance optimization this pac
 I've spent about a year experimenting with different ideas of Rose Tree implementation
 optimized for needs of building UIs for recursive data. The biggest turned out to be performance.
 Usually, data for web applications are coming from a server which uses SQL database as storage.
-API usually then renders flat JSON or any other data format which defines recursive as relations ship.
+API usually then renders flat JSON or any other data format which uses references to describe recursive relationships.
 Therefore one of the main features that are needed is an efficient and easy way to build tree from a list of data.
 This usually results in exponential complexity. Since one item might be a child of multiple other things
 there has to be at least one iteration over the whole list of data. Also by definition using such data
