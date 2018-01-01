@@ -11,18 +11,30 @@ module Lazy.Tree.Zipper
         , filter
         , fromTree
         , insert
+        , isEmpty
         , isRoot
         , map
         , open
+        , openAll
         , openPath
         , root
         , setTree
         , up
         , update
+        , updateItem
         , upwards
         )
 
-{-| Zipper implementation for Lazy Rose Tree.
+{-| Zipper implementation for `Lazy.Tree`.
+
+> A zipper is a technique of representing an aggregate data structure so that it is convenient
+> for writing programs that traverse the structure arbitrarily and update its contents,
+> especially in purely functional programming languages.
+
+`Zipper` is a secret sauce that gives `Tree` real power.
+It provides an easy way to query and modify the `Tree` in a clever and very flexible way.
+
+Types within this module are exposed type aliases to make it easy extend default functionality of `Zipper`.
 
 
 # Types
@@ -32,12 +44,12 @@ module Lazy.Tree.Zipper
 
 # Query
 
-@docs current, children, isRoot, attempt
+@docs current, children, isRoot, isEmpty, attempt
 
 
 # Operations
 
-@docs insert, delete, update, setTree, open, openPath, attemptOpenPath, up, upwards, root
+@docs insert, delete, update, updateItem, setTree, open, openPath, openAll, attemptOpenPath, up, upwards, root
 
 
 # Transformations
@@ -55,7 +67,9 @@ import Lazy.LList as LL exposing (LList)
 import Lazy.Tree as Tree exposing (Forest, Tree)
 
 
-{-| -}
+{-| ** Be careful when comparing `Breadcrumb`s using `(==)`.**
+Due to use of lazyness `(==)` isn't reliable for comparing Breadcrumbs.
+-}
 type alias Breadcrumb a =
     ( Forest a, a, Forest a )
 
@@ -65,7 +79,7 @@ type alias Zipper a =
     ( Tree a, List (Breadcrumb a) )
 
 
-{-| Init Zipper for Tree
+{-| Init `Zipper` for `Tree`.
 
     import Lazy.Tree as T
 
@@ -80,7 +94,7 @@ fromTree tree =
     ( tree, [] )
 
 
-{-| Get current Tree
+{-| Get current `Tree`.
 
     import Lazy.Tree as T
 
@@ -96,7 +110,7 @@ current =
     Tree.item << Tuple.first
 
 
-{-| Get Children of current Tree
+{-| Get children of current `Tree`.
 
     import Lazy.Tree as T
 
@@ -112,7 +126,7 @@ children =
     Tree.children << Tuple.first
 
 
-{-| Detect if zipper is focused on root tree
+{-| Detect if `Zipper` is focused on root `Tree`.
 
     import Lazy.Tree as T
 
@@ -127,7 +141,13 @@ isRoot =
     List.isEmpty << Tuple.second
 
 
-{-| Insert sub Tree to current Tree
+{-| -}
+isEmpty : Zipper a -> Bool
+isEmpty =
+    Tree.isEmpty << Tuple.first
+
+
+{-| Insert sub `Tree` into current `Tree` in `Zipper`.
 
     import Lazy.Tree as T
 
@@ -144,7 +164,7 @@ insert tree ( t, breadcrumbs ) =
     ( Tree.insert tree t, breadcrumbs )
 
 
-{-| Delete Current Tree from Zipper
+{-| Delete current `Tree` from `Zipper`.
 
 Returns Nothing if root node is removed.
 
@@ -174,7 +194,7 @@ delete ( tree, breadcrumbs ) =
             Just ( Tree.tree parent (LL.append left right), tail )
 
 
-{-| Replace Current tree with new one
+{-| Replace current `Tree` with new one.
 
     import Lazy.Tree as T
 
@@ -190,7 +210,7 @@ setTree tree ( _, breadcrumbs ) =
     ( tree, breadcrumbs )
 
 
-{-| Update Current Tree using given function
+{-| Update current `Tree` using given function.
 
     import Lazy.Tree as T
 
@@ -206,7 +226,23 @@ update =
     Tuple.mapFirst
 
 
-{-| Map function over Zipper
+{-| Update current `Tree` using given function.
+
+    import Lazy.Tree as T
+
+    T.singleton "foo"
+        |> fromTree
+        |> updateItem (\i -> i ++ " fighter")
+        |> current
+    --> "foo fighter"
+
+-}
+updateItem : (a -> a) -> Zipper a -> Zipper a
+updateItem predicate ( tree, breadcrumbs ) =
+    ( Tree.tree (predicate <| Tree.item tree) <| Tree.descendants tree, breadcrumbs )
+
+
+{-| Map function over `Zipper`.
 
     import Lazy.Tree as T
 
@@ -222,7 +258,7 @@ map predicate ( tree, breadcrumbs ) =
     ( Tree.map predicate tree, breadCrumbsMap predicate breadcrumbs )
 
 
-{-| Performs filter on current Tree in zipper. See `Tree.filter` for more informations.
+{-| Performs filter on current `Tree` in `Zipper`. See `Tree.filter` for more informations.
 
     import Lazy.LList as LL
 
@@ -256,7 +292,7 @@ filter predicate =
     Tuple.mapFirst (Tree.filter predicate)
 
 
-{-| Attempt to perform action over zipper and return original zipper in cases where this action isn't valid.
+{-| Attempt to perform action over zipper and return original `Zipper` in cases where this action returns `Nothing`.
 
     import Lazy.Tree as T
 
@@ -280,7 +316,7 @@ attempt action zipper =
     Maybe.withDefault zipper <| action zipper
 
 
-{-| Return back to parent
+{-| Return back to parent of current `Tree` in given `Zipper`.
 
     import Lazy.Tree as T
 
@@ -308,7 +344,7 @@ up ( item, breadcrumbs ) =
             Just ( Tree.tree parent (LL.append left (LL.cons item right)), tail )
 
 
-{-| Go upwards n times.
+{-| Perform [`up`](#up) n times.
 
     import Lazy.Tree as T
 
@@ -321,16 +357,22 @@ up ( item, breadcrumbs ) =
         |> Maybe.map current
     --> Just "foo"
 
+Returns given `Zipper` return if `0` is passed:
+
     T.singleton "foo"
        |> fromTree
        |> upwards 0
        |> Maybe.map current
     --> Just "foo"
 
+Return `Nothing` if there are not enough ancestors in `Zipper`:
+
     T.singleton 4
         |> fromTree
         |> upwards 1
     --> Nothing
+
+Return `Nothing` if negative integer is passed:
 
     T.singleton 4
         |> fromTree
@@ -349,7 +391,7 @@ upwards n zipper =
             |> Maybe.andThen (upwards (n - 1))
 
 
-{-| Back to root Tree
+{-| Back to root `Tree`.
 
     import Lazy.Tree as T
 
@@ -374,7 +416,7 @@ root (( _, breadcrumbs ) as zipper) =
     attempt (upwards <| List.length breadcrumbs) zipper
 
 
-{-| Oper first parent which satisfy given condition
+{-| Open first children that satisfy given condition.
 
     import Lazy.Tree as T
 
@@ -414,7 +456,7 @@ open predicate ( tree, breadcrumbs ) =
     Maybe.map (\tree -> ( tree, ( left, current, right ) :: breadcrumbs )) item
 
 
-{-| Open multiple by reducing list
+{-| Open multiple levels reducing list by given function.
 
     import Lazy.Tree as T
 
@@ -422,24 +464,34 @@ open predicate ( tree, breadcrumbs ) =
         |> fromTree
         |> insert (T.singleton "bar" |> T.insert (T.singleton "baz") )
         |> openPath (==) [ "bar", "baz" ]
-        |> Maybe.map current
-    --> Just "baz"
-
+        |> Result.map current
+    --> Ok "baz"
 
     T.singleton "foo"
         |> fromTree
         |> insert (T.singleton "bar")
         |> openPath (==) [ "not-here", "baz" ]
-        |> Maybe.map current
-    --> Nothing
+        |> Result.map current
+    --> Err "Can't resolve open for \"not-here\""
 
 -}
-openPath : (b -> a -> Bool) -> List b -> Zipper a -> Maybe (Zipper a)
+openPath : (b -> a -> Bool) -> List b -> Zipper a -> Result String (Zipper a)
 openPath predicate path zipper =
-    List.foldl (\i -> Maybe.andThen (open <| predicate i)) (Just zipper) path
+    let
+        toResult i =
+            Result.fromMaybe <| "Can't resolve open for " ++ toString i
+    in
+    List.foldl (\i acc -> Result.andThen (toResult i << (open <| predicate i)) acc) (Ok zipper) path
 
 
-{-| Open multiple by reducing list and ignore missmatches.
+{-| -}
+openAll : Zipper a -> List (Zipper a)
+openAll ( tree, breadcrumbs ) =
+    sliceForest (Tree.descendants tree)
+        |> List.map (\( left, t, right ) -> ( t, ( left, Tree.item tree, right ) :: breadcrumbs ))
+
+
+{-| Similar to [`openPath`](#openPath) but ingnore failed steps.
 
     import Lazy.Tree as T
 
@@ -469,7 +521,7 @@ attemptOpenPath predicate path zipper =
     List.foldl (attempt << open << predicate) zipper path
 
 
-{-| Get breacrubs as indexed list
+{-| Get `Breacrub`s as indexed `List`.
 
     import Lazy.Tree as T
 
@@ -499,6 +551,11 @@ breadCrumbsMap predicate =
 -- Tree helpers
 
 
+cutForest : (a -> Bool) -> Forest a -> ( Forest a, Maybe (Tree a), Forest a )
+cutForest =
+    cutForest_ LL.empty
+
+
 cutForest_ : Forest a -> (a -> Bool) -> Forest a -> ( Forest a, Maybe (Tree a), Forest a )
 cutForest_ acc predicate forest =
     case LL.toList forest of
@@ -512,6 +569,20 @@ cutForest_ acc predicate forest =
                 cutForest_ (LL.cons head acc) predicate (LL.fromList tail)
 
 
-cutForest : (a -> Bool) -> Forest a -> ( Forest a, Maybe (Tree a), Forest a )
-cutForest =
-    cutForest_ LL.empty
+sliceForest : Forest a -> List ( Forest a, Tree a, Forest a )
+sliceForest =
+    sliceForest_ [] LL.empty
+
+
+sliceForest_ : List ( Forest a, Tree a, Forest a ) -> Forest a -> Forest a -> List ( Forest a, Tree a, Forest a )
+sliceForest_ acc left right =
+    case LL.toList right of
+        [] ->
+            List.reverse acc
+
+        head :: tail ->
+            let
+                newItem =
+                    ( left, head, LL.fromList tail )
+            in
+            sliceForest_ (newItem :: acc) (LL.append left (LL.singleton head)) (LL.fromList tail)
