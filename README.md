@@ -154,7 +154,7 @@ Those are the things I've experimented with over time:
 - Strict based (`Tree a (List a)`) - not that great performance but OK until you hit too much recursion.
 - Lazy List based implementation (`Tree a (LazyList a)`) - runs into too much recursion even on simpler data.
 - Continuation Passing / CPS - very slow (hitting scripts runs for too long) - might have been an issue with a particular algorithm.
-- Lazy List construction - implemented in two ways (this package ins 2nd implementation of the idea) - very best performance.
+- Lazy List construction - this is what this package is using - very best performance.
 
 # License
 
