@@ -12,7 +12,6 @@ language: node_js
 
 env:
   matrix:
-    - ELM_VERSION=0.18.0 TARGET_NODE_VERSION=node
     - ELM_VERSION=0.18.0 TARGET_NODE_VERSION=4.0
 
 before_install:
@@ -29,8 +28,6 @@ before_install:
       make && make install;
       cd ..;
     fi
-
-install:
   - nvm install $TARGET_NODE_VERSION
   - nvm use $TARGET_NODE_VERSION
   - node --version
@@ -39,6 +36,8 @@ install:
   - mv $(npm config get prefix)/bin/elm-make $(npm config get prefix)/bin/elm-make-old
   - printf '%s\n\n' '#!/bin/bash' 'echo "Running elm-make with sysconfcpus -n 2"' '$TRAVIS_BUILD_DIR/sysconfcpus/bin/sysconfcpus -n 2 elm-make-old "$@"' > $(npm config get prefix)/bin/elm-make
   - chmod +x $(npm config get prefix)/bin/elm-make
+
+install:
   - elm-package install --yes
 
 script:
