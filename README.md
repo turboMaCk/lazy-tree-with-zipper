@@ -136,7 +136,7 @@ viewLevel zipper =
 # Performance
 
 `Tree` is using custom List like implementation (`LList`) to enable lazy level after level evaluation
-of tree. This approach is the main approach to performance optimization this package takes.
+of tree. In fact `LList` is just a function that construct plain old `List`. This id approach is the main performance optimization used in this library.
 
 # Background
 
