@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/turboMaCk/tree-with-zipper.svg?branch=master)](https://travis-ci.org/turboMaCk/tree-with-zipper)
 
 This is pure [Elm](http://elm-lang.org/) [rose tree](https://en.wikipedia.org/wiki/Rose_tree)
-with [zipper](https://en.wikipedia.org/wiki/Rose_tree) implementation.
+with [zipper](https://en.wikipedia.org/wiki/Zipper_(data_structure)) implementation.
 In context of Elm, this data structure is mostly useful for building hierarchical interfaces
 like menus, folder browsers or filters.
 
