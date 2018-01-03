@@ -9,10 +9,11 @@ cache:
     - sysconfcpus
 
 language: node_js
+node_js:
+  - '4.0'
 
 env:
-  matrix:
-    - ELM_VERSION=0.18.0 TARGET_NODE_VERSION=4.0
+  - ELM_VERSION=0.18.0
 
 before_install:
   - if [ ${TRAVIS_OS_NAME} == "osx" ];
@@ -28,8 +29,6 @@ before_install:
       make && make install;
       cd ..;
     fi
-  - nvm install $TARGET_NODE_VERSION
-  - nvm use $TARGET_NODE_VERSION
   - node --version
   - npm --version
   - npm install -g elm@$ELM_VERSION elm-test elm-doc-test
