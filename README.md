@@ -19,7 +19,7 @@ Feedback and contributions to both code and documentation are very welcome.
 As a pure Elm package preferable way to install is using elm package:
 
 ```
-$ elm package install turboMaCk/tree-with-zipper
+$ elm package install turboMaCk/lazy-tree-with-zipper
 ```
 
 This is example of whole application that renders levels of items as nested tree
