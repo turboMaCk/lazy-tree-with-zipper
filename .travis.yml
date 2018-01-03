@@ -40,5 +40,5 @@ install:
   - elm-package install --yes
 
 script:
-  - elm-make --yes
+  - npm test
   - pushd examples && elm-make Main.elm --yes && popd
