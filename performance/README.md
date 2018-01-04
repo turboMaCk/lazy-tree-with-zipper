@@ -22,6 +22,11 @@ MacOS Chrome:
 Arch Linux Chromium:
 ![](linux_lazy.png)
 
+## Conclusion
+
+For large trees where it's not necessary to evaluate whole structure at once lazy tree is definitelly much more performant.
+However if you're working with much smaller data strict version like `tomjkidd/elm-multiway-tree-zipper` should be fine.
+
 ## MacOS Chrome
 
 ```
