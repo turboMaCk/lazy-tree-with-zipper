@@ -12,6 +12,7 @@ MacOS Chrome:
 ![](mac_strict.png)
 
 Arch Linux Chromium:
+![](linux_strict.png)
 
 # HW specifications
 
@@ -19,6 +20,7 @@ MacOS Chrome:
 ![](mac_lazy.png)
 
 Arch Linux Chromium:
+![](linux_lazy.png)
 
 ## MacOS Chrome
 
@@ -35,3 +37,19 @@ Chrome Version 63.0.3239.108 (Official Build) (64-bit)
 
 
 ## Arch Linux Chromium
+
+```
+OS: Arch Linux
+Kernel: x86_64 Linux 4.14.9-1-ARCH
+Packages: 1448
+Shell: zsh 5.4.2
+Resolution: 1920x1200
+WM: XMonad
+CPU: AMD Ryzen 7 1800X Eight-Core @ 16x 3.6GHz [41.0°C]
+GPU: AMD/ATI Lexa PRO [Radeon RX 550]
+RAM: 2985MiB / 32183MiB
+```
+
+```
+Chromium Version 63.0.3239.108 (Developer Build) (64-bit)
+```
