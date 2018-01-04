@@ -4,7 +4,7 @@ I've implemented the same feature within one of our application using
 [tomjkidd/elm-multiway-tree-zipper](http://package.elm-lang.org/packages/tomjkidd/elm-multiway-tree-zipper/latest)
 and this package and profiled performance with real production data.
 
-Application fetch data from two endpoints and then builds a Tree from them. The total number of nodes within resulting three is 4278.
+Application fetches data from two endpoints and then builds a Tree from them. The total number of nodes within resulting tree is 4278.
 
 # Strict Implementation (tomjkidd/elm-multiway-tree-zipper)
 
