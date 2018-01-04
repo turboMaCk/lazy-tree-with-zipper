@@ -20,6 +20,9 @@ module Lazy.LList
         , map2
         , reverse
         , singleton
+        , sort
+        , sortBy
+        , sortWith
         , tail
         , toList
         )
@@ -47,7 +50,7 @@ just in case some additional user extensions will need it.
 
 # Transformations
 
-@docs map, map2, filter, filterMap, reverse, foldr, foldl, lazyFoldr, lazyFoldl, concat, andThen
+@docs map, map2, filter, filterMap, reverse, sort, sortBy, sortWith, foldr, foldl, lazyFoldr, lazyFoldl, concat, andThen
 
 -}
 
@@ -297,6 +300,63 @@ This function is performed lazily.
 reverse : LList a -> LList a
 reverse =
     Lazy.map List.reverse
+
+
+{-| Sort by for `LList`.
+
+    fromList [ 3, 1, 2 ]
+        |> sort
+        |> toList
+    --> [ 1, 2, 3 ]
+
+This function is performed lazily.
+
+-}
+sort : LList comparable -> LList comparable
+sort =
+    Lazy.map List.sort
+
+
+{-| Sort by for `LList`.
+
+    fromList [ 3, 1, 2 ]
+        |> sortBy identity
+        |> toList
+    --> [ 1, 2, 3 ]
+
+    fromList [ { val = "c"} , { val = "b"}, { val = "a"} ]
+        |> sortBy .val
+        |> toList
+    -->  [ { val = "a"}, { val = "b"}, { val = "c"} ]
+
+This function is performed lazily.
+
+-}
+sortBy : (a -> comparable) -> LList a -> LList a
+sortBy predicate =
+    Lazy.map (List.sortBy predicate)
+
+
+{-| Sort with for `LList`
+
+    flippedComparison : comparable -> comparable -> Order
+    flippedComparison a b =
+        case Basics.compare a b of
+            LT -> GT
+            EQ -> EQ
+            GT -> LT
+
+    llist (List.range 1) 5
+        |> sortWith flippedComparison
+        |> toList
+    --> [ 5, 4, 3, 2, 1 ]
+
+This function is performed lazily.
+
+-}
+sortWith : (a -> a -> Order) -> LList a -> LList a
+sortWith predicate =
+    Lazy.map (List.sortWith predicate)
 
 
 {-| Same as `List.foldr` but for `LLists`.

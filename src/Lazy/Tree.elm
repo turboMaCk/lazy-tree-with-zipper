@@ -19,6 +19,9 @@ module Lazy.Tree
         , map
         , map2
         , singleton
+        , sort
+        , sortBy
+        , sortWith
         , tree
         )
 
@@ -48,7 +51,7 @@ to lazily evaluate levels of Tree.
 
 # Transforms
 
-@docs map, map2, filter, filterMap, andMap, flatten, andThen
+@docs map, map2, filter, filterMap, sort, sortBy, sortWith, andMap, flatten, andThen
 
 
 # Forest
@@ -57,6 +60,7 @@ to lazily evaluate levels of Tree.
 
 -}
 
+import Lazy exposing (Lazy)
 import Lazy.LList as LL exposing (LList)
 
 
@@ -305,6 +309,86 @@ filterMap : (a -> Maybe b) -> Tree a -> Maybe (Tree b)
 filterMap predicate (Tree item c) =
     predicate item
         |> Maybe.map (\i -> tree i <| LL.filterMap (filterMap predicate) c)
+
+
+{-| Sort `tree`.
+
+    singleton 10
+        |> insert (singleton 5)
+        |> insert (singleton 2)
+        |> sort
+        |> children
+    --> [ 2, 5 ]
+
+it applies all levels:
+
+    import Lazy.LList as LL
+
+    singleton 10
+        |> insert (tree 20 <| LL.llist (List.reverse << List.map singleton << List.range 1) 5)
+        |> sort
+        |> descendants
+        |> LL.map children
+        |> LL.toList
+    --> [ [ 1, 2, 3, 4, 5 ] ]
+
+-}
+sort : Tree comparable -> Tree comparable
+sort (Tree a f) =
+    tree a <| LL.map sort <| LL.sortBy item f
+
+
+{-| Sort `Tree` by a function.
+
+    singleton { val = 10 }
+       |> insert (singleton { val = 7 })
+       |> insert (singleton { val = 3 })
+       |> sortBy .val
+       |> children
+    --> [ { val = 3 }, { val = 7 } ]
+
+it applies to all levels:
+
+    import Lazy.LList as LL
+
+    singleton { a = 10 }
+        |> insert (tree { a = 20 } <| LL.llist (List.reverse << List.map (\v -> singleton { a = v }) << List.range 1) 3)
+        |> sortBy .a
+        |> descendants
+        |> LL.map children
+        |> LL.toList
+    --> [ [ { a = 1 }, { a = 2 }, { a = 3 } ] ]
+
+-}
+sortBy : (a -> comparable) -> Tree a -> Tree a
+sortBy predicate (Tree a f) =
+    tree a <|
+        LL.map (sortBy predicate) <|
+            LL.sortBy (predicate << item) f
+
+
+{-| Sort `Tree` using custom Ordering function
+
+    flippedComparison : comparable -> comparable -> Order
+    flippedComparison a b =
+        case Basics.compare a b of
+            LT -> GT
+            EQ -> EQ
+            GT -> LT
+
+    singleton 10
+        |> insert (singleton 2)
+        |> insert (singleton 5)
+        |> sortWith flippedComparison
+        |> children
+    --> [ 5, 2 ]
+
+-}
+sortWith : (a -> a -> Order) -> Tree a -> Tree a
+sortWith predicate (Tree a f) =
+    tree a <|
+        LL.map (sortWith predicate) <|
+            LL.sortWith (\a b -> predicate (item a) (item b)) f
 
 
 {-| Chain map operations.
