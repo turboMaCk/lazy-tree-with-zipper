@@ -7,8 +7,20 @@ with [zipper](https://en.wikipedia.org/wiki/Zipper_(data_structure)) implementat
 In context of Elm, this data structure is mostly useful for building hierarchical interfaces
 like menus, folder browsers or filters.
 
-Main features of this library are things like easily building tree structure from flat list
+Main features of this library are things like easy building tree structure from flat Lists
 with very good performance characteristics, powerful and extensible zipper and feature-rich API.
+
+# Performance
+
+`Tree` is using custom List like implementation (`LList`) to enable lazy level after level evaluation
+of tree. In fact `LList` is just a function that construct plain old `List`. This id approach is the main performance optimization used in this library.
+
+There is another library implementing same idea in slightly different way [tomjkidd/elm-multiway-tree-zipper](tomjkidd/elm-multiway-tree-zipper).
+The main difference is that `elm-multiway-tree-zipper` implementation is strict so whole Tree is immediately evaluated.
+Implementation provided by this package is optimalized for situations in which it isn't necessary to construct whole
+structure immediately. In situations where Tree is expanded level by level this implementation yields
+much better performance than strict implementation especially for large trees.
+You can find basic comparison in [performance](https://github.com/turboMaCk/lazy-tree-with-zipper/blob/master/performance).
 
 __This package is highly experimental and might change a lot over time.__
 
@@ -132,11 +144,6 @@ viewLevel zipper =
                 []
         ]
 ```
-
-# Performance
-
-`Tree` is using custom List like implementation (`LList`) to enable lazy level after level evaluation
-of tree. In fact `LList` is just a function that construct plain old `List`. This id approach is the main performance optimization used in this library.
 
 # Background
 
