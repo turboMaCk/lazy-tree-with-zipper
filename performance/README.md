@@ -6,6 +6,14 @@ and this package and profiled performance with real production data.
 
 Application fetches data from two endpoints and then builds a Tree from them. The total number of nodes within resulting tree is 4278.
 
+# Lazy Implementation (this package)
+
+MacOS Chrome:
+![](mac_lazy.png)
+
+Arch Linux Chromium:
+![](linux_lazy.png)
+
 # Strict Implementation (tomjkidd/elm-multiway-tree-zipper)
 
 MacOS Chrome:
@@ -14,20 +22,15 @@ MacOS Chrome:
 Arch Linux Chromium:
 ![](linux_strict.png)
 
-# HW specifications
-
-MacOS Chrome:
-![](mac_lazy.png)
-
-Arch Linux Chromium:
-![](linux_lazy.png)
 
 ## Conclusion
 
 For large trees where it's not necessary to evaluate whole structure at once lazy tree is definitelly much more performant.
 However if you're working with much smaller data strict version like `tomjkidd/elm-multiway-tree-zipper` should be fine.
 
-## MacOS Chrome
+## HW specifications
+
+### MacOS Chrome
 
 ```
 MacBook Pro (Retina, 15-inch, Mid 2015)
@@ -41,7 +44,7 @@ Chrome Version 63.0.3239.108 (Official Build) (64-bit)
 ```
 
 
-## Arch Linux Chromium
+### Arch Linux Chromium
 
 ```
 OS: Arch Linux
