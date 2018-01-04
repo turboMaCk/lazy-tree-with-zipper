@@ -10,8 +10,6 @@ module Lazy.Tree
         , filter
         , filterMap
         , flatten
-        , foldl
-        , foldr
         , forestMap
         , forestMap2
         , fromList
@@ -53,7 +51,7 @@ to lazily evaluate levels of Tree.
 
 # Transforms
 
-@docs map, map2, filter, filterMap, sort, sortBy, sortWith, foldl, foldr, andMap, flatten, andThen
+@docs map, map2, filter, filterMap, sort, sortBy, sortWith, andMap, flatten, andThen
 
 
 # Forest
@@ -391,18 +389,6 @@ sortWith predicate (Tree a f) =
     tree a <|
         LL.map (sortWith predicate) <|
             LL.sortWith (\a b -> predicate (item a) (item b)) f
-
-
-{-| -}
-foldr : (a -> b -> b) -> b -> Tree a -> Lazy b
-foldr predicate acc t =
-    Debug.crash "todo"
-
-
-{-| -}
-foldl : (a -> b -> b) -> b -> Tree a -> Lazy b
-foldl predicate acc t =
-    Debug.crash "todo"
 
 
 {-| Chain map operations.
