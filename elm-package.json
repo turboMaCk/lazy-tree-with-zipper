@@ -1,7 +1,7 @@
 {
     "version": "1.0.0",
-    "summary": "helpful summary of your project, less than 80 characters",
-    "repository": "https://github.com/user/project.git",
+    "summary": "Lazy rose tree (multiway tree) with zipper.",
+    "repository": "https://github.com/turboMaCk/lazy-tree-with-zipper.git",
     "license": "BSD3",
     "source-directories": [
         "src"

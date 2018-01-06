@@ -2,10 +2,10 @@
 
 [![Build Status](https://travis-ci.org/turboMaCk/lazy-tree-with-zipper.svg?branch=master)](https://travis-ci.org/turboMaCk/lazy-tree-with-zipper)
 
-This is pure [Elm](http://elm-lang.org/) [rose tree](https://en.wikipedia.org/wiki/Rose_tree)
+This is pure Elm [rose tree](https://en.wikipedia.org/wiki/Rose_tree)
 with [zipper](https://en.wikipedia.org/wiki/Zipper_(data_structure)) implementation.
 In context of Elm, this data structure is mostly useful for building hierarchical interfaces
-like menus, folder browsers or filters.
+like menus, data browsers or filters.
 
 Main features of this library are things like easy building tree structure from flat Lists
 with very good performance characteristics, powerful and extensible zipper and feature-rich API.
