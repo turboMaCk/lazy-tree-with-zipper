@@ -1,6 +1,6 @@
 {
     "version": "1.0.0",
-    "summary": "Pure Elm lazy rose tree (multiway tree) with zipper.",
+    "summary": "Lazy rose tree (multiway tree) with zipper.",
     "repository": "https://github.com/turboMaCk/lazy-tree-with-zipper.git",
     "license": "BSD3",
     "source-directories": [
