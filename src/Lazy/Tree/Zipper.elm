@@ -548,6 +548,13 @@ attemptOpenPath predicate path zipper =
     List.foldl (attempt << open << predicate) zipper path
 
 
+{-| Use given function to convert current breadcrumb path to a list
+-}
+getPath : (a -> b) -> Zipper a -> List b
+getPath fc ( _, breadcrumbs ) =
+    List.foldr (\( _, a, _ ) acc -> fc a :: acc) [] breadcrumbs
+
+
 {-| Get `Breacrub`s as indexed `List`.
 
     import Lazy.Tree as T
