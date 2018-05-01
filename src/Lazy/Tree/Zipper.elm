@@ -10,6 +10,7 @@ module Lazy.Tree.Zipper
         , delete
         , filter
         , fromTree
+        , getPath
         , insert
         , isEmpty
         , isRoot
@@ -49,7 +50,7 @@ Types within this module are exposed type aliases to make it easy extend default
 
 # Operations
 
-@docs insert, delete, update, updateItem, setTree, open, openPath, openAll, attemptOpenPath, up, upwards, root
+@docs insert, delete, update, updateItem, setTree, open, getPath, openPath, openAll, attemptOpenPath, up, upwards, root
 
 
 # Transformations
@@ -471,6 +472,30 @@ open predicate ( tree, breadcrumbs ) =
     Maybe.map (\tree -> ( tree, ( left, current, right ) :: breadcrumbs )) item
 
 
+{-| Use given function to convert current breadcrumb path to a list
+
+    import Lazy.Tree as T
+
+    T.singleton "foo"
+        |> fromTree
+        |> insert (T.singleton "bar")
+        |> attemptOpenPath (==) [ "bar" ]
+        |> getPath identity
+    --> [ "foo", "bar" ]
+
+    T.singleton "foo"
+        |> fromTree
+        |> insert (T.singleton "bar" |> T.insert (T.singleton "baz") )
+        |> attemptOpenPath (==) [ "bar", "baz" ]
+        |> getPath identity
+    --> [ "foo", "bar", "baz" ]
+
+-}
+getPath : (a -> b) -> Zipper a -> List b
+getPath fc ( tree, breadcrumbs ) =
+    List.foldl (\( _, a, _ ) acc -> fc a :: acc) [ fc <| Tree.item tree ] breadcrumbs
+
+
 {-| Open multiple levels reducing list by given function.
 
     import Lazy.Tree as T
@@ -546,13 +571,6 @@ openAll ( tree, breadcrumbs ) =
 attemptOpenPath : (b -> a -> Bool) -> List b -> Zipper a -> Zipper a
 attemptOpenPath predicate path zipper =
     List.foldl (attempt << open << predicate) zipper path
-
-
-{-| Use given function to convert current breadcrumb path to a list
--}
-getPath : (a -> b) -> Zipper a -> List b
-getPath fc ( _, breadcrumbs ) =
-    List.foldr (\( _, a, _ ) acc -> fc a :: acc) [] breadcrumbs
 
 
 {-| Get `Breacrub`s as indexed `List`.
