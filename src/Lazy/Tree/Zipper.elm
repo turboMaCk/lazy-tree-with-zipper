@@ -474,6 +474,8 @@ open predicate ( tree, breadcrumbs ) =
 
 {-| Use given function to convert current breadcrumb path to a list
 
+Resulting list of breadcrumbs contains currently focused item as well.
+
     import Lazy.Tree as T
 
     T.singleton "foo"
