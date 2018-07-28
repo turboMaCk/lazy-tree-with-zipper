@@ -65,7 +65,7 @@ Types within this module are exposed type aliases to make it easy extend default
 -}
 
 import Lazy.LList as LL exposing (LList)
-import Lazy.Tree as Tree exposing (Forest, Tree)
+import Lazy.Tree as Tree exposing (Forest, Tree(Tree))
 
 
 {-| ** Be careful when comparing `Breadcrumb`s using `(==)`.**
@@ -207,7 +207,7 @@ delete ( tree, breadcrumbs ) =
             Nothing
 
         ( left, parent, right ) :: tail ->
-            Just ( Tree.tree parent (LL.append left right), tail )
+            Just ( Tree parent (LL.append left right), tail )
 
 
 {-| Replace current `Tree` with new one.
@@ -255,7 +255,7 @@ update =
 -}
 updateItem : (a -> a) -> Zipper a -> Zipper a
 updateItem predicate ( tree, breadcrumbs ) =
-    ( Tree.tree (predicate <| Tree.item tree) <| Tree.descendants tree, breadcrumbs )
+    ( Tree (predicate <| Tree.item tree) <| Tree.descendants tree, breadcrumbs )
 
 
 {-| Map function over `Zipper`.
@@ -277,14 +277,15 @@ map predicate ( tree, breadcrumbs ) =
 {-| Performs filter on current `Tree` in `Zipper`. See `Tree.filter` for more informations.
 
     import Lazy.LList as LL
+    import Lazy.Tree as T
 
-    T.tree 1 (LL.fromList [ T.singleton 2, T.singleton 3, T.singleton 4 ])
+    T.Tree 1 (LL.fromList [ T.singleton 2, T.singleton 3, T.singleton 4 ])
         |> fromTree
         |> filter ((>) 4)
         |> children
     --> [ 2, 3 ]
 
-    T.tree 1 (LL.fromList [ T.singleton 2, T.singleton 3, T.singleton 4 ])
+    T.Tree 1 (LL.fromList [ T.singleton 2, T.singleton 3, T.singleton 4 ])
         |> fromTree
         |> attempt (open ((==) 1))
         |> filter ((<) 2)
@@ -292,7 +293,7 @@ map predicate ( tree, breadcrumbs ) =
         |> children
     --> [ 3, 4 ]
 
-    T.tree 1 (LL.fromList [ T.insert (T.singleton 5) <| T.singleton 2, T.insert (T.singleton 6) <| T.singleton 3, T.singleton 4 ])
+    T.Tree 1 (LL.fromList [ T.insert (T.singleton 5) <| T.singleton 2, T.insert (T.singleton 6) <| T.singleton 3, T.singleton 4 ])
         |> fromTree
         |> attempt (open ((==) 1))
         |> filter ((<) 2)
@@ -357,7 +358,7 @@ up ( item, breadcrumbs ) =
             Nothing
 
         ( left, parent, right ) :: tail ->
-            Just ( Tree.tree parent (LL.append (LL.reverse left) (LL.cons item right)), tail )
+            Just ( Tree parent (LL.append (LL.reverse left) (LL.cons item right)), tail )
 
 
 {-| Perform [`up`](#up) n times.
