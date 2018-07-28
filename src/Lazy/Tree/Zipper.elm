@@ -71,8 +71,12 @@ import Lazy.Tree as Tree exposing (Forest, Tree(Tree))
 {-| ** Be careful when comparing `Breadcrumb`s using `(==)`.**
 Due to use of lazyness `(==)` isn't reliable for comparing Breadcrumbs.
 -}
-type alias Breadcrumb a =
-    ( Forest a, a, Forest a )
+type Breadcrumb a
+    = Breadcrumb
+        { left : Forest a
+        , parent : a
+        , right : Forest a
+        }
 
 
 {-| -}
@@ -206,7 +210,7 @@ delete ( tree, breadcrumbs ) =
         [] ->
             Nothing
 
-        ( left, parent, right ) :: tail ->
+        (Breadcrumb { left, parent, right }) :: tail ->
             Just ( Tree parent (LL.append left right), tail )
 
 
@@ -357,7 +361,7 @@ up ( item, breadcrumbs ) =
         [] ->
             Nothing
 
-        ( left, parent, right ) :: tail ->
+        (Breadcrumb { left, parent, right }) :: tail ->
             Just ( Tree parent (LL.append (LL.reverse left) (LL.cons item right)), tail )
 
 
@@ -470,7 +474,18 @@ open predicate ( tree, breadcrumbs ) =
         ( left, item, right ) =
             cutForest predicate children
     in
-    Maybe.map (\tree -> ( tree, ( left, current, right ) :: breadcrumbs )) item
+    Maybe.map
+        (\tree ->
+            ( tree
+            , Breadcrumb
+                { left = left
+                , parent = current
+                , right = right
+                }
+                :: breadcrumbs
+            )
+        )
+        item
 
 
 {-| Use given function to convert current breadcrumb path to a list
@@ -496,7 +511,9 @@ Resulting list of breadcrumbs contains currently focused item as well.
 -}
 getPath : (a -> b) -> Zipper a -> List b
 getPath fc ( tree, breadcrumbs ) =
-    List.foldl (\( _, a, _ ) acc -> fc a :: acc) [ fc <| Tree.item tree ] breadcrumbs
+    List.foldl (\(Breadcrumb { parent }) acc -> fc parent :: acc)
+        [ fc <| Tree.item tree ]
+        breadcrumbs
 
 
 {-| Open multiple levels reducing list by given function.
@@ -543,7 +560,17 @@ openPath predicate path zipper =
 openAll : Zipper a -> List (Zipper a)
 openAll ( tree, breadcrumbs ) =
     sliceForest (Tree.descendants tree)
-        |> List.map (\( left, t, right ) -> ( t, ( left, Tree.item tree, right ) :: breadcrumbs ))
+        |> List.map
+            (\( left, parent, right ) ->
+                ( parent
+                , Breadcrumb
+                    { left = left
+                    , parent = Tree.item tree
+                    , right = right
+                    }
+                    :: breadcrumbs
+                )
+            )
 
 
 {-| Similar to [`openPath`](#openPath) but ingnore failed steps.
@@ -590,7 +617,7 @@ attemptOpenPath predicate path zipper =
 -}
 breadCrumbs : Zipper a -> List ( Int, a )
 breadCrumbs =
-    List.indexedMap (\i ( _, b, _ ) -> ( i + 1, b )) << Tuple.second
+    List.indexedMap (\i (Breadcrumb { parent }) -> ( i + 1, parent )) << Tuple.second
 
 
 
@@ -599,7 +626,14 @@ breadCrumbs =
 
 breadCrumbsMap : (a -> b) -> List (Breadcrumb a) -> List (Breadcrumb b)
 breadCrumbsMap predicate =
-    List.map (\( pre, item, after ) -> ( Tree.forestMap predicate pre, predicate item, Tree.forestMap predicate after ))
+    List.map
+        (\(Breadcrumb { left, parent, right }) ->
+            Breadcrumb
+                { left = Tree.forestMap predicate left
+                , parent = predicate parent
+                , right = Tree.forestMap predicate right
+                }
+        )
 
 
 
