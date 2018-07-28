@@ -1,0 +1,4 @@
+{
+    "root": "../src",
+    "tests": ["Lazy.Tree", "Lazy.LList", "Lazy.Tree.Zipper"]
+}
