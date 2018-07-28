@@ -4,15 +4,15 @@ module Lazy.Tree.Zipper
         , Zipper(..)
         , attempt
         , attemptOpenPath
-        , breadCrumbs
+        , breadcrumbs
         , children
         , current
         , delete
         , filter
         , fromTree
-        , getBreadcrumbs
         , getPath
         , getTree
+        , indexedBreadcrumbs
         , insert
         , isEmpty
         , isRoot
@@ -47,7 +47,7 @@ Types within this module are exposed type aliases to make it easy extend default
 
 # Query
 
-@docs current, children, isRoot, isEmpty, attempt, getTree, getBreadcrumbs
+@docs current, children, isRoot, isEmpty, attempt, getTree
 
 
 # Operations
@@ -62,7 +62,7 @@ Types within this module are exposed type aliases to make it easy extend default
 
 # Breadcrumbs
 
-@docs breadCrumbs
+@docs breadcrumbs, indexedBreadcrumbs
 
 -}
 
@@ -72,6 +72,11 @@ import Lazy.Tree as Tree exposing (Forest, Tree(Tree))
 
 {-| ** Be careful when comparing `Breadcrumb`s using `(==)`.**
 Due to use of lazyness `(==)` isn't reliable for comparing Breadcrumbs.
+
+Breadcrumbs are private type not meant to be manipulated directly.
+However it's possible to extract breadcrubs from `Zipper` in transformed
+format using `breadcrumbs` and `indexedBreadcrumbs` functions which are meant for public use.
+
 -}
 type Breadcrumb a
     = Breadcrumb
@@ -101,7 +106,19 @@ fromTree tree =
     Zipper tree []
 
 
-{-| -}
+{-| Extract current `Tree` from a `Zipper`.
+
+useful in case where you don't want to use pattern mathcing
+
+    import Lazy.Tree as T
+
+    T.singleton "foo"
+        |> fromTree
+        |> getTree
+        |> T.item
+    --> "foo"
+
+-}
 getTree : Zipper a -> Tree a
 getTree (Zipper tree _) =
     tree
@@ -135,8 +152,8 @@ current =
 
 -}
 children : Zipper a -> List a
-children (Zipper tree _) =
-    Tree.children tree
+children =
+    Tree.children << getTree
 
 
 {-| Check if `Zipper` is focused on root `Tree`.
@@ -270,12 +287,6 @@ updateItem predicate (Zipper tree breadcrumbs) =
     Zipper (Tree (predicate <| Tree.item tree) <| Tree.descendants tree) breadcrumbs
 
 
-{-| -}
-getBreadcrumbs : Zipper a -> List (Breadcrumb a)
-getBreadcrumbs (Zipper _ bs) =
-    bs
-
-
 {-| Map function over `Zipper`.
 
     import Lazy.Tree as T
@@ -289,7 +300,7 @@ getBreadcrumbs (Zipper _ bs) =
 -}
 map : (a -> b) -> Zipper a -> Zipper b
 map predicate (Zipper tree breadcrumbs) =
-    Zipper (Tree.map predicate tree) <| breadCrumbsMap predicate breadcrumbs
+    Zipper (Tree.map predicate tree) <| breadcrumbsMap predicate breadcrumbs
 
 
 {-| Performs filter on current `Tree` in `Zipper`. See `Tree.filter` for more informations.
@@ -621,6 +632,23 @@ attemptOpenPath predicate path zipper =
     List.foldl (attempt << open << predicate) zipper path
 
 
+{-| Get `List` of `Breacrub`s .
+
+    import Lazy.Tree as T
+
+    T.singleton "foo"
+        |> fromTree
+        |> insert (T.singleton "bar" |> T.insert (T.singleton "baz"))
+        |> attemptOpenPath (==) [ "bar", "baz" ]
+        |> breadcrumbs
+    --> [ "bar", "foo" ]
+
+-}
+breadcrumbs : Zipper a -> List a
+breadcrumbs (Zipper _ bs) =
+    List.map (\(Breadcrumb { parent }) -> parent ) bs
+
+
 {-| Get `Breacrub`s as indexed `List`.
 
     import Lazy.Tree as T
@@ -629,12 +657,12 @@ attemptOpenPath predicate path zipper =
         |> fromTree
         |> insert (T.singleton "bar" |> T.insert (T.singleton "baz"))
         |> attemptOpenPath (==) [ "bar", "baz" ]
-        |> breadCrumbs
+        |> indexedBreadcrumbs
     --> [ ( 1, "bar" ), ( 2, "foo" )]
 
 -}
-breadCrumbs : Zipper a -> List ( Int, a )
-breadCrumbs (Zipper _ bs) =
+indexedBreadcrumbs : Zipper a -> List ( Int, a )
+indexedBreadcrumbs (Zipper _ bs) =
     List.indexedMap (\i (Breadcrumb { parent }) -> ( i + 1, parent )) bs
 
 
@@ -642,8 +670,8 @@ breadCrumbs (Zipper _ bs) =
 -- Private
 
 
-breadCrumbsMap : (a -> b) -> List (Breadcrumb a) -> List (Breadcrumb b)
-breadCrumbsMap predicate =
+breadcrumbsMap : (a -> b) -> List (Breadcrumb a) -> List (Breadcrumb b)
+breadcrumbsMap predicate =
     List.map
         (\(Breadcrumb { left, parent, right }) ->
             Breadcrumb
