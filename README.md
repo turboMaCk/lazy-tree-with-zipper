@@ -42,7 +42,7 @@ module Main exposing (..)
 
 import Html exposing (Html)
 import Html.Events as Events
-import Lazy.Tree as Tree
+import Lazy.Tree as Tree exposing (Tree(Tree))
 import Lazy.Tree.Zipper as Zipper exposing (Zipper)
 
 
@@ -91,7 +91,7 @@ init =
     in
     List.map ((,) False) items
         |> Tree.fromList (\p ( _, i ) -> Maybe.map (.id << Tuple.second) p == i.parent)
-        |> Tree.tree ( False, root )
+        |> Tree ( False, root )
         |> Zipper.fromTree
 
 
