@@ -1,5 +1,5 @@
 {
-    "version": "1.1.0",
+    "version": "2.0.0",
     "summary": "Lazy rose tree (multiway tree) with zipper.",
     "repository": "https://github.com/turboMaCk/lazy-tree-with-zipper.git",
     "license": "BSD3",
