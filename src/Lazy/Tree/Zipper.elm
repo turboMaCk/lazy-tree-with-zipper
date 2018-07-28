@@ -1,7 +1,7 @@
 module Lazy.Tree.Zipper
     exposing
         ( Breadcrumb
-        , Zipper
+        , Zipper(..)
         , attempt
         , attemptOpenPath
         , breadCrumbs
@@ -10,7 +10,9 @@ module Lazy.Tree.Zipper
         , delete
         , filter
         , fromTree
+        , getBreadcrumbs
         , getPath
+        , getTree
         , insert
         , isEmpty
         , isRoot
@@ -45,7 +47,7 @@ Types within this module are exposed type aliases to make it easy extend default
 
 # Query
 
-@docs current, children, isRoot, isEmpty, attempt
+@docs current, children, isRoot, isEmpty, attempt, getTree, getBreadcrumbs
 
 
 # Operations
@@ -80,8 +82,8 @@ type Breadcrumb a
 
 
 {-| -}
-type alias Zipper a =
-    ( Tree a, List (Breadcrumb a) )
+type Zipper a
+    = Zipper (Tree a) (List (Breadcrumb a))
 
 
 {-| Init `Zipper` for `Tree`.
@@ -96,7 +98,13 @@ type alias Zipper a =
 -}
 fromTree : Tree a -> Zipper a
 fromTree tree =
-    ( tree, [] )
+    Zipper tree []
+
+
+{-| -}
+getTree : Zipper a -> Tree a
+getTree (Zipper tree _) =
+    tree
 
 
 {-| Get current `Tree`.
@@ -112,7 +120,7 @@ fromTree tree =
 -}
 current : Zipper a -> a
 current =
-    Tree.item << Tuple.first
+    Tree.item << getTree
 
 
 {-| Get children of current `Tree`.
@@ -127,8 +135,8 @@ current =
 
 -}
 children : Zipper a -> List a
-children =
-    Tree.children << Tuple.first
+children (Zipper tree _) =
+    Tree.children tree
 
 
 {-| Check if `Zipper` is focused on root `Tree`.
@@ -142,8 +150,8 @@ children =
 
 -}
 isRoot : Zipper a -> Bool
-isRoot =
-    List.isEmpty << Tuple.second
+isRoot (Zipper _ bs) =
+    List.isEmpty bs
 
 
 {-| Check if current `Tree` in `Zipper` is empty.
@@ -163,8 +171,8 @@ isRoot =
 
 -}
 isEmpty : Zipper a -> Bool
-isEmpty =
-    Tree.isEmpty << Tuple.first
+isEmpty (Zipper tree _) =
+    Tree.isEmpty tree
 
 
 {-| Insert sub `Tree` into current `Tree` in `Zipper`.
@@ -180,8 +188,8 @@ isEmpty =
 
 -}
 insert : Tree a -> Zipper a -> Zipper a
-insert tree ( t, breadcrumbs ) =
-    ( Tree.insert tree t, breadcrumbs )
+insert tree (Zipper t breadcrumbs) =
+    Zipper (Tree.insert tree t) breadcrumbs
 
 
 {-| Delete current `Tree` from `Zipper`.
@@ -205,13 +213,13 @@ Returns Nothing if root node is removed.
 
 -}
 delete : Zipper a -> Maybe (Zipper a)
-delete ( tree, breadcrumbs ) =
+delete (Zipper tree breadcrumbs) =
     case breadcrumbs of
         [] ->
             Nothing
 
         (Breadcrumb { left, parent, right }) :: tail ->
-            Just ( Tree parent (LL.append left right), tail )
+            Just <| Zipper (Tree parent <| LL.append left right) tail
 
 
 {-| Replace current `Tree` with new one.
@@ -226,8 +234,8 @@ delete ( tree, breadcrumbs ) =
 
 -}
 setTree : Tree a -> Zipper a -> Zipper a
-setTree tree ( _, breadcrumbs ) =
-    ( tree, breadcrumbs )
+setTree tree (Zipper _ breadcrumbs) =
+    Zipper tree breadcrumbs
 
 
 {-| Update current `Tree` using given function.
@@ -242,8 +250,8 @@ setTree tree ( _, breadcrumbs ) =
 
 -}
 update : (Tree a -> Tree a) -> Zipper a -> Zipper a
-update =
-    Tuple.mapFirst
+update f (Zipper t bs) =
+    Zipper (f t) bs
 
 
 {-| Update current `Tree` using given function.
@@ -258,8 +266,14 @@ update =
 
 -}
 updateItem : (a -> a) -> Zipper a -> Zipper a
-updateItem predicate ( tree, breadcrumbs ) =
-    ( Tree (predicate <| Tree.item tree) <| Tree.descendants tree, breadcrumbs )
+updateItem predicate (Zipper tree breadcrumbs) =
+    Zipper (Tree (predicate <| Tree.item tree) <| Tree.descendants tree) breadcrumbs
+
+
+{-| -}
+getBreadcrumbs : Zipper a -> List (Breadcrumb a)
+getBreadcrumbs (Zipper _ bs) =
+    bs
 
 
 {-| Map function over `Zipper`.
@@ -274,8 +288,8 @@ updateItem predicate ( tree, breadcrumbs ) =
 
 -}
 map : (a -> b) -> Zipper a -> Zipper b
-map predicate ( tree, breadcrumbs ) =
-    ( Tree.map predicate tree, breadCrumbsMap predicate breadcrumbs )
+map predicate (Zipper tree breadcrumbs) =
+    Zipper (Tree.map predicate tree) <| breadCrumbsMap predicate breadcrumbs
 
 
 {-| Performs filter on current `Tree` in `Zipper`. See `Tree.filter` for more informations.
@@ -301,7 +315,7 @@ map predicate ( tree, breadcrumbs ) =
         |> fromTree
         |> attempt (open ((==) 1))
         |> filter ((<) 2)
-        |> Tuple.first
+        |> getTree
         |> T.descendants
         |> LL.andThen (LL.map T.item << T.descendants)
         |> LL.toList
@@ -309,8 +323,8 @@ map predicate ( tree, breadcrumbs ) =
 
 -}
 filter : (a -> Bool) -> Zipper a -> Zipper a
-filter predicate =
-    Tuple.mapFirst (Tree.filter predicate)
+filter predicate (Zipper t bs) =
+    Zipper (Tree.filter predicate t) bs
 
 
 {-| Attempt to perform action over zipper and return original `Zipper` in cases where this action returns `Nothing`.
@@ -356,13 +370,19 @@ attempt action zipper =
 
 -}
 up : Zipper a -> Maybe (Zipper a)
-up ( item, breadcrumbs ) =
+up (Zipper tree breadcrumbs) =
     case breadcrumbs of
         [] ->
             Nothing
 
         (Breadcrumb { left, parent, right }) :: tail ->
-            Just ( Tree parent (LL.append (LL.reverse left) (LL.cons item right)), tail )
+            Just <|
+                Zipper
+                    (Tree parent <|
+                        LL.append (LL.reverse left) <|
+                            LL.cons tree right
+                    )
+                    tail
 
 
 {-| Perform [`up`](#up) n times.
@@ -433,7 +453,7 @@ upwards n zipper =
 
 -}
 root : Zipper a -> Zipper a
-root (( _, breadcrumbs ) as zipper) =
+root ((Zipper _ breadcrumbs) as zipper) =
     attempt (upwards <| List.length breadcrumbs) zipper
 
 
@@ -463,7 +483,7 @@ root (( _, breadcrumbs ) as zipper) =
 
 -}
 open : (a -> Bool) -> Zipper a -> Maybe (Zipper a)
-open predicate ( tree, breadcrumbs ) =
+open predicate (Zipper tree breadcrumbs) =
     let
         current =
             Tree.item tree
@@ -476,14 +496,13 @@ open predicate ( tree, breadcrumbs ) =
     in
     Maybe.map
         (\tree ->
-            ( tree
-            , Breadcrumb
-                { left = left
-                , parent = current
-                , right = right
-                }
-                :: breadcrumbs
-            )
+            Zipper tree <|
+                Breadcrumb
+                    { left = left
+                    , parent = current
+                    , right = right
+                    }
+                    :: breadcrumbs
         )
         item
 
@@ -510,7 +529,7 @@ Resulting list of breadcrumbs contains currently focused item as well.
 
 -}
 getPath : (a -> b) -> Zipper a -> List b
-getPath fc ( tree, breadcrumbs ) =
+getPath fc (Zipper tree breadcrumbs) =
     List.foldl (\(Breadcrumb { parent }) acc -> fc parent :: acc)
         [ fc <| Tree.item tree ]
         breadcrumbs
@@ -558,18 +577,17 @@ openPath predicate path zipper =
 
 -}
 openAll : Zipper a -> List (Zipper a)
-openAll ( tree, breadcrumbs ) =
+openAll (Zipper tree breadcrumbs) =
     sliceForest (Tree.descendants tree)
         |> List.map
             (\( left, parent, right ) ->
-                ( parent
-                , Breadcrumb
-                    { left = left
-                    , parent = Tree.item tree
-                    , right = right
-                    }
-                    :: breadcrumbs
-                )
+                Zipper parent <|
+                    Breadcrumb
+                        { left = left
+                        , parent = Tree.item tree
+                        , right = right
+                        }
+                        :: breadcrumbs
             )
 
 
@@ -616,8 +634,8 @@ attemptOpenPath predicate path zipper =
 
 -}
 breadCrumbs : Zipper a -> List ( Int, a )
-breadCrumbs =
-    List.indexedMap (\i (Breadcrumb { parent }) -> ( i + 1, parent )) << Tuple.second
+breadCrumbs (Zipper _ bs) =
+    List.indexedMap (\i (Breadcrumb { parent }) -> ( i + 1, parent )) bs
 
 
 
