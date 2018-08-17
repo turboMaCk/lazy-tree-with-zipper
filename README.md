@@ -1,6 +1,6 @@
 # Tree with Zipper
 
-[![Build Status](https://travis-ci.org/turboMaCk/lazy-tree-with-zipper.svg?branch=master)](https://travis-ci.org/turboMaCk/lazy-tree-with-zipper)
+[![Build Status](https://travis-ci.org/turboMaCk/lazy-tree-with-zipper.svg?branch=master)](https://travis-ci.org/turboMaCk/lazy-tree-with-zipper) [Documentation](http://package.elm-lang.org/packages/turboMaCk/lazy-tree-with-zipper/latest)
 
 This is pure Elm [rose tree](https://en.wikipedia.org/wiki/Rose_tree)
 with [zipper](https://en.wikipedia.org/wiki/Zipper_(data_structure)) implementation.
