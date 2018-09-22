@@ -10,7 +10,7 @@ cache:
 
 language: node_js
 node_js:
-  - '4.0'
+  - '8.0'
 
 env:
   - ELM_VERSION=0.18.0
