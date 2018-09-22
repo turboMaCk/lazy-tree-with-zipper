@@ -1,9 +1,9 @@
 {
-    "scripts": {
-        "test": "node_modules/.bin/elm-verify-examples"
-    },
+  "scripts": {
+    "test": "node_modules/.bin/elm-verify-examples"
+  },
   "dependencies": {
-    "elm-verify-examples": "^4.0.0",
+    "elm-verify-examples": "^2.0.0",
     "elm-test": "^0.18.12"
   }
 }
