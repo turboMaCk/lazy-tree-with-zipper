@@ -1,4 +1,6 @@
 {
+  "name": "elm-lazy-tree-with-zipper",
+  "version": "2.0.0",
   "scripts": {
     "test": "node_modules/.bin/elm-verify-examples"
   },
