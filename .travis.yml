@@ -38,6 +38,7 @@ before_install:
 
 install:
   - elm-package install --yes
+  - npm install
 
 script:
   - npm test
