@@ -1,31 +1,9 @@
-module Lazy.LList
-    exposing
-        ( LList
-        , andThen
-        , append
-        , concat
-        , cons
-        , empty
-        , filter
-        , filterMap
-        , foldl
-        , foldr
-        , fromList
-        , head
-        , isEmpty
-        , lazyFoldl
-        , lazyFoldr
-        , llist
-        , map
-        , map2
-        , reverse
-        , singleton
-        , sort
-        , sortBy
-        , sortWith
-        , tail
-        , toList
-        )
+module Lazy.LList exposing
+    ( LList, empty, singleton, llist, fromList
+    , cons, append
+    , isEmpty, toList, head, tail
+    , map, map2, filter, filterMap, reverse, sort, sortBy, sortWith, foldr, foldl, lazyFoldr, lazyFoldl, concat, andThen
+    )
 
 {-| This module implements lazy construction of strict List.
 It is not Lazy List implementation and it has different characteristics.
@@ -35,7 +13,7 @@ just in case some additional user extensions will need it.
 
 # Types & Constructors
 
-@docs LList, empty, singleton, llist, isEmpty, fromList
+@docs LList, empty, singleton, llist, fromList
 
 
 # Operations

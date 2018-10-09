@@ -1,28 +1,10 @@
-module Lazy.Tree
-    exposing
-        ( Forest
-        , Tree(..)
-        , andMap
-        , andThen
-        , build
-        , children
-        , descendants
-        , filter
-        , filterMap
-        , flatten
-        , forestMap
-        , forestMap2
-        , fromList
-        , insert
-        , isEmpty
-        , item
-        , map
-        , map2
-        , singleton
-        , sort
-        , sortBy
-        , sortWith
-        )
+module Lazy.Tree exposing
+    ( Tree(..), Forest, singleton, build, fromList
+    , isEmpty, item, children, descendants
+    , insert
+    , map, map2, filter, filterMap, sort, sortBy, sortWith, andMap, flatten, andThen
+    , forestMap, forestMap2
+    )
 
 {-| This module implements Rose Tree data structure.
 
@@ -62,14 +44,14 @@ to lazily evaluate levels of Tree.
 import Lazy.LList as LL exposing (LList)
 
 
-{-| ** Be careful when comparing `Tree`s using `(==)`.**
+{-| \*\* Be careful when comparing `Tree`s using `(==)`.\*\*
 Due to use of lazyness `(==)` isn't reliable for comparing Trees.
 -}
 type Tree a
     = Tree a (Forest a)
 
 
-{-| ** Be careful when comparing `Forest`s using `(==)`.**
+{-| \*\* Be careful when comparing `Forest`s using `(==)`.\*\*
 Due to use of lazyness `(==)` isn't reliable for comparing Forests.
 -}
 type alias Forest a =
@@ -263,6 +245,7 @@ filter_ : (a -> Bool) -> Tree a -> Maybe (Tree a)
 filter_ predicate (Tree item c) =
     if predicate item then
         Just <| Tree item <| LL.filterMap (filter_ predicate) c
+
     else
         Nothing
 

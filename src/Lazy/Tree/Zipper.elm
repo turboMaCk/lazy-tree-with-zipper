@@ -1,32 +1,10 @@
-module Lazy.Tree.Zipper
-    exposing
-        ( Breadcrumb
-        , Zipper(..)
-        , attempt
-        , attemptOpenPath
-        , breadcrumbs
-        , children
-        , current
-        , delete
-        , filter
-        , fromTree
-        , getPath
-        , getTree
-        , indexedBreadcrumbs
-        , insert
-        , isEmpty
-        , isRoot
-        , map
-        , open
-        , openAll
-        , openPath
-        , root
-        , setTree
-        , up
-        , update
-        , updateItem
-        , upwards
-        )
+module Lazy.Tree.Zipper exposing
+    ( Breadcrumb, Zipper(..), fromTree
+    , current, children, isRoot, isEmpty, attempt, getTree
+    , insert, delete, update, updateItem, setTree, open, getPath, openPath, openAll, attemptOpenPath, up, upwards, root
+    , map, filter
+    , breadcrumbs, indexedBreadcrumbs
+    )
 
 {-| Zipper implementation for `Lazy.Tree`.
 
@@ -67,10 +45,10 @@ Types within this module are exposed type aliases to make it easy extend default
 -}
 
 import Lazy.LList as LL exposing (LList)
-import Lazy.Tree as Tree exposing (Forest, Tree(Tree))
+import Lazy.Tree as Tree exposing (Forest, Tree(..))
 
 
-{-| ** Be careful when comparing `Breadcrumb`s using `(==)`.**
+{-| \*\* Be careful when comparing `Breadcrumb`s using `(==)`.\*\*
 Due to use of lazyness `(==)` isn't reliable for comparing Breadcrumbs.
 
 Breadcrumbs are private type not meant to be manipulated directly.
@@ -436,8 +414,10 @@ upwards : Int -> Zipper a -> Maybe (Zipper a)
 upwards n zipper =
     if n < 0 then
         Nothing
+
     else if n == 0 then
         Just zipper
+
     else
         up zipper
             |> Maybe.andThen (upwards (n - 1))
@@ -646,7 +626,7 @@ attemptOpenPath predicate path zipper =
 -}
 breadcrumbs : Zipper a -> List a
 breadcrumbs (Zipper _ bs) =
-    List.map (\(Breadcrumb { parent }) -> parent ) bs
+    List.map (\(Breadcrumb { parent }) -> parent) bs
 
 
 {-| Get `Breacrub`s as indexed `List`.
@@ -700,6 +680,7 @@ cutForest_ acc predicate forest =
         head :: tail ->
             if predicate <| Tree.item head then
                 ( acc, Just head, LL.fromList tail )
+
             else
                 cutForest_ (LL.cons head acc) predicate (LL.fromList tail)
 
