@@ -29,16 +29,16 @@ before_install:
       make && make install;
       cd ..;
     fi
-
-install:
   - node --version
   - npm --version
   - npm install -g elm@$ELM_VERSION
   - mv $(npm config get prefix)/bin/elm $(npm config get prefix)/bin/elm-old
   - printf '%s\n\n' '#!/bin/bash' 'echo "Running elm make with sysconfcpus -n 2"' '$TRAVIS_BUILD_DIR/sysconfcpus/bin/sysconfcpus -n 2 elm-old "$@"' > $(npm config get prefix)/bin/elm
   - chmod +x $(npm config get prefix)/bin/elm
+
+install:
   - npm install
-  - pushd examples && elm make Main.elm && popd
 
 script:
   - npm test
+  - pushd examples && elm make Main.elm --yes && popd
