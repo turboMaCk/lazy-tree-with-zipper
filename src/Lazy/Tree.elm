@@ -97,7 +97,7 @@ Or lookups to some other data structure.
     childrenDict : Dict String (List String)
     childrenDict = Dict.fromList [ ("foo", [ "bar", "baz" ]) ]
 
-    build (Maybe.withDefault [] << flip Dict.get childrenDict) rootItem
+    build (\i -> Maybe.withDefault [] <| Dict.get i childrenDict) rootItem
         |> children
     --> [ "bar", "baz" ]
 
@@ -237,14 +237,14 @@ even if on those it might pass.
 
 -}
 filter : (a -> Bool) -> Tree a -> Tree a
-filter predicate (Tree item c) =
-    Tree item <| LL.filterMap (filter_ predicate) c
+filter predicate (Tree treeItem c) =
+    Tree treeItem <| LL.filterMap (filter_ predicate) c
 
 
 filter_ : (a -> Bool) -> Tree a -> Maybe (Tree a)
-filter_ predicate (Tree item c) =
-    if predicate item then
-        Just <| Tree item <| LL.filterMap (filter_ predicate) c
+filter_ predicate (Tree treeItem c) =
+    if predicate treeItem then
+        Just <| Tree treeItem <| LL.filterMap (filter_ predicate) c
 
     else
         Nothing
@@ -268,8 +268,8 @@ In case of `filterMap` even root node has to satisfy predicate otherwise
 
 -}
 filterMap : (a -> Maybe b) -> Tree a -> Maybe (Tree b)
-filterMap predicate (Tree item c) =
-    predicate item
+filterMap predicate (Tree treeItem c) =
+    predicate treeItem
         |> Maybe.map (\i -> Tree i <| LL.filterMap (filterMap predicate) c)
 
 
@@ -350,14 +350,15 @@ sortWith : (a -> a -> Order) -> Tree a -> Tree a
 sortWith predicate (Tree a f) =
     Tree a <|
         LL.map (sortWith predicate) <|
-            LL.sortWith (\a b -> predicate (item a) (item b)) f
+            LL.sortWith (\fst snd -> predicate (item fst) (item snd)) f
 
 
 {-| Chain map operations.
 
     import Lazy.LList as LL
+    import Tuple
 
-    Tree (,) (LL.fromList [ singleton (,), singleton (,), singleton (,) ])
+    Tree Tuple.pair (LL.fromList [ singleton Tuple.pair, singleton Tuple.pair, singleton Tuple.pair ])
         |> andMap (Tree 1 <| LL.fromList [ singleton 2, singleton 3, singleton 4 ])
         |> andMap (Tree 5 <| LL.fromList [ singleton 6, singleton 7 ])
         |> children
@@ -385,8 +386,8 @@ andMap =
 
 -}
 flatten : Tree (Tree a) -> Tree a
-flatten (Tree (Tree item c) children) =
-    Tree item <| LL.append c <| LL.map flatten children
+flatten (Tree (Tree treeItem c) treeChildren) =
+    Tree treeItem <| LL.append c <| LL.map flatten treeChildren
 
 
 {-| Map given function onto a `Tree` and flatten the result.
@@ -421,8 +422,8 @@ andThen fc =
 
 -}
 insert : Tree a -> Tree a -> Tree a
-insert t (Tree item c) =
-    Tree item <| LL.append c <| LL.fromList [ t ]
+insert t (Tree treeItem c) =
+    Tree treeItem <| LL.append c <| LL.fromList [ t ]
 
 
 
@@ -504,5 +505,5 @@ forestMap2 predicate =
 
 
 constructTree : (Maybe a -> a -> Bool) -> List a -> a -> Tree a
-constructTree isParent list item =
-    Tree item <| fromList_ (Just item) isParent list
+constructTree isParent list treeItem =
+    Tree treeItem <| fromList_ (Just treeItem) isParent list

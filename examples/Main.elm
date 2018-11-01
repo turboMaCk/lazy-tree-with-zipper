@@ -1,15 +1,16 @@
 module Main exposing (main)
 
+import Browser
 import Html exposing (Html)
 import Html.Events as Events
-import Lazy.Tree as Tree exposing (Tree(Tree))
+import Lazy.Tree as Tree exposing (Tree(..))
 import Lazy.Tree.Zipper as Zipper exposing (Zipper)
 
 
-main : Program Never Model Msg
+main : Program () Model Msg
 main =
-    Html.beginnerProgram
-        { model = init
+    Browser.sandbox
+        { init = init
         , update = update
         , view = view
         }
@@ -49,7 +50,7 @@ init =
         root =
             { id = -1, name = "root", parent = Nothing }
     in
-    List.map ((,) False) items
+    List.map (\b -> ( False, b )) items
         |> Tree.fromList (\p ( _, i ) -> Maybe.map (.id << Tuple.second) p == i.parent)
         |> Tree ( False, root )
         |> Zipper.fromTree
@@ -89,9 +90,11 @@ viewLevel zipper =
                 Html.span []
                     [ if isOpen then
                         Html.text "- "
+
                       else
                         Html.text "+ "
                     ]
+
               else
                 Html.text ""
             , Html.text item.name
@@ -100,6 +103,7 @@ viewLevel zipper =
             if isOpen then
                 Zipper.openAll zipper
                     |> List.map viewLevel
+
             else
                 []
         ]
