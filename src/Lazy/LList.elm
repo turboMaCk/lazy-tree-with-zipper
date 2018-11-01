@@ -78,7 +78,7 @@ For instance you can use some `List` constructor:
 
 Or use any other function you need`List`:
 
-    llist (List.filter <| \a -> a % 2 == 0) (List.range 0 10)
+    llist (List.filter <| \a -> modBy 2 a == 0) (List.range 0 10)
         |> toList
     --> [ 0, 2, 4, 6, 8, 10 ]
 

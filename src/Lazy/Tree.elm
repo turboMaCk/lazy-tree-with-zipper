@@ -97,7 +97,7 @@ Or lookups to some other data structure.
     childrenDict : Dict String (List String)
     childrenDict = Dict.fromList [ ("foo", [ "bar", "baz" ]) ]
 
-    build (Maybe.withDefault [] << flip Dict.get childrenDict) rootItem
+    build (\i -> Maybe.withDefault [] <| Dict.get i childrenDict) rootItem
         |> children
     --> [ "bar", "baz" ]
 
@@ -356,8 +356,9 @@ sortWith predicate (Tree a f) =
 {-| Chain map operations.
 
     import Lazy.LList as LL
+    import Tuple
 
-    Tree (,) (LL.fromList [ singleton (,), singleton (,), singleton (,) ])
+    Tree Tuple.pair (LL.fromList [ singleton Tuple.pair, singleton Tuple.pair, singleton Tuple.pair ])
         |> andMap (Tree 1 <| LL.fromList [ singleton 2, singleton 3, singleton 4 ])
         |> andMap (Tree 5 <| LL.fromList [ singleton 6, singleton 7 ])
         |> children

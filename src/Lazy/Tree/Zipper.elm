@@ -542,7 +542,7 @@ getPath fc (Zipper tree zipperBreadcrumbs) =
         |> insert (T.singleton "bar")
         |> openPath (==) [ "not-here", "baz" ]
         |> Result.map current
-    --> Err "Can't resolve open for \"not-here\""
+    --> Err "Can't resolve open"
 
 -}
 openPath : (b -> a -> Bool) -> List b -> Zipper a -> Result String (Zipper a)
