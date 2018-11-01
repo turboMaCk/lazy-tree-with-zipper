@@ -37,7 +37,6 @@ before_install:
   - chmod +x $(npm config get prefix)/bin/elm
 
 install:
-  - elm install
   - npm install
 
 script:
