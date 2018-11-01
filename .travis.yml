@@ -11,8 +11,7 @@ cache:
 language: node_js
 
 env:
-  - ELM_VERSION=0.19.0
-  - TARGET_NODE_VERSION=8
+  - ELM_VERSION=0.19.0 TARGET_NODE_VERSION=8
 
 before_install:
   - echo -e "Host github.com\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
