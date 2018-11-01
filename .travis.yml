@@ -29,6 +29,8 @@ before_install:
       make && make install;
       cd ..;
     fi
+
+install:
   - node --version
   - npm --version
   - npm install -g elm@$ELM_VERSION
@@ -38,7 +40,7 @@ before_install:
 
 install:
   - npm install
+  - pushd examples && elm make Main.elm && popd
 
 script:
   - npm test
-  - pushd examples && elm make Main.elm --yes && popd
