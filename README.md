@@ -15,7 +15,7 @@ with very good performance characteristics, powerful and extensible zipper and f
 `Tree` is using custom List like implementation (`LList`) to enable lazy level after level evaluation
 of tree. In fact `LList` is just a function that construct plain old `List`. This id approach is the main performance optimization used in this library.
 
-There is another library implementing same idea in slightly different way [tomjkidd/elm-multiway-tree-zipper](tomjkidd/elm-multiway-tree-zipper).
+There is another library implementing same idea in slightly different way [tomjkidd/elm-multiway-tree-zipper](https://github.com/tomjkidd/elm-multiway-tree-zipper).
 The main difference is that `elm-multiway-tree-zipper` implementation is strict so whole Tree is immediately evaluated.
 Implementation provided by this package is optimalized for situations in which it isn't necessary to construct whole
 structure immediately. In situations where Tree is expanded level by level this implementation yields
