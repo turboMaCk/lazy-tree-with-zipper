@@ -3,7 +3,7 @@
     "name": "turboMaCk/lazy-tree-with-zipper",
     "summary": "Lazy rose tree (multiway tree) with zipper.",
     "license": "BSD-3-Clause",
-    "version": "2.0.0",
+    "version": "3.0.0",
     "exposed-modules": [
         "Lazy.Tree",
         "Lazy.Tree.Zipper",
