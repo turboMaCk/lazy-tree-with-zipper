@@ -1,9 +1,29 @@
-module Lazy.LList exposing
-    ( LList, empty, singleton, llist, fromList
-    , cons, append
-    , isEmpty, toList, head, tail
-    , map, map2, filter, filterMap, reverse, sort, sortBy, sortWith, foldr, foldl, lazyFoldr, lazyFoldl, concat, andThen
-    )
+module Lazy.LList
+    exposing
+        ( LList
+        , andThen
+        , append
+        , concat
+        , cons
+        , empty
+        , filter
+        , filterMap
+        , foldl
+        , foldr
+        , fromList
+        , head
+        , isEmpty
+        , llist
+        , map
+        , map2
+        , reverse
+        , singleton
+        , sort
+        , sortBy
+        , sortWith
+        , tail
+        , toList
+        )
 
 {-| This module implements lazy construction of strict List.
 It is not Lazy List implementation and it has different characteristics.
@@ -28,7 +48,7 @@ just in case some additional user extensions will need it.
 
 # Transformations
 
-@docs map, map2, filter, filterMap, reverse, sort, sortBy, sortWith, foldr, foldl, lazyFoldr, lazyFoldl, concat, andThen
+@docs map, map2, filter, filterMap, reverse, sort, sortBy, sortWith, foldr, foldl, concat, andThen
 
 -}
 
@@ -373,39 +393,11 @@ foldl predicate acc =
     List.foldl predicate acc << toList
 
 
-{-| Lazy variant of `foldr`.
-
-Works only with lazy values.
-
-    import Lazy
-
-    llist (List.range 0) 5
-        |> lazyFoldr (\a -> Lazy.map ((+) a)) (Lazy.lazy <| always 0)
-        |> Lazy.force
-    --> 15
-
-This function is performed lazily.
-
--}
 lazyFoldr : (a -> Lazy b -> Lazy b) -> Lazy b -> LList a -> Lazy b
 lazyFoldr predicate acc =
     Lazy.andThen (List.foldr predicate acc)
 
 
-{-| Lazy variant of `foldl`.
-
-Works only with lazy values.
-
-    import Lazy
-
-    llist (List.range 0) 5
-        |> lazyFoldl (\a -> Lazy.map ((+) a)) (Lazy.lazy <| always 0)
-        |> Lazy.force
-    --> 15
-
-This function is performed lazily.
-
--}
 lazyFoldl : (a -> Lazy b -> Lazy b) -> Lazy b -> LList a -> Lazy b
 lazyFoldl predicate acc =
     Lazy.andThen (List.foldl predicate acc)
