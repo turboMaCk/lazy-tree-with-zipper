@@ -2,10 +2,10 @@
   "name": "elm-lazy-tree-with-zipper",
   "version": "2.0.0",
   "scripts": {
-    "test": "./node_modules/.bin/elm-verify-examples"
+    "test": "./node_modules/.bin/elm-verify-examples --elm-test=elm-test"
   },
   "dependencies": {
-    "elm-verify-examples": "^2.0.0",
-    "elm-test": "^0.18.12"
+    "elm-test": "^0.19.0-beta11",
+    "elm-verify-examples": "^3.0.1"
   }
 }

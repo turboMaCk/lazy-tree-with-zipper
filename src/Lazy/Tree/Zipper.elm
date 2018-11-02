@@ -1,32 +1,10 @@
-module Lazy.Tree.Zipper
-    exposing
-        ( Breadcrumb
-        , Zipper(..)
-        , attempt
-        , attemptOpenPath
-        , breadcrumbs
-        , children
-        , current
-        , delete
-        , filter
-        , fromTree
-        , getPath
-        , getTree
-        , indexedBreadcrumbs
-        , insert
-        , isEmpty
-        , isRoot
-        , map
-        , open
-        , openAll
-        , openPath
-        , root
-        , setTree
-        , up
-        , update
-        , updateItem
-        , upwards
-        )
+module Lazy.Tree.Zipper exposing
+    ( Breadcrumb, Zipper(..), fromTree
+    , current, children, isRoot, isEmpty, attempt, getTree
+    , insert, delete, update, updateItem, setTree, open, getPath, openPath, openAll, attemptOpenPath, up, upwards, root
+    , map, filter
+    , breadcrumbs, indexedBreadcrumbs
+    )
 
 {-| Zipper implementation for `Lazy.Tree`.
 
@@ -67,10 +45,10 @@ Types within this module are exposed type aliases to make it easy extend default
 -}
 
 import Lazy.LList as LL exposing (LList)
-import Lazy.Tree as Tree exposing (Forest, Tree(Tree))
+import Lazy.Tree as Tree exposing (Forest, Tree(..))
 
 
-{-| ** Be careful when comparing `Breadcrumb`s using `(==)`.**
+{-| \*\* Be careful when comparing `Breadcrumb`s using `(==)`.\*\*
 Due to use of lazyness `(==)` isn't reliable for comparing Breadcrumbs.
 
 Breadcrumbs are private type not meant to be manipulated directly.
@@ -205,8 +183,8 @@ isEmpty (Zipper tree _) =
 
 -}
 insert : Tree a -> Zipper a -> Zipper a
-insert tree (Zipper t breadcrumbs) =
-    Zipper (Tree.insert tree t) breadcrumbs
+insert tree (Zipper t zipperBreadcrumbs) =
+    Zipper (Tree.insert tree t) zipperBreadcrumbs
 
 
 {-| Delete current `Tree` from `Zipper`.
@@ -230,8 +208,8 @@ Returns Nothing if root node is removed.
 
 -}
 delete : Zipper a -> Maybe (Zipper a)
-delete (Zipper tree breadcrumbs) =
-    case breadcrumbs of
+delete (Zipper tree zipperBreadcrumbs) =
+    case zipperBreadcrumbs of
         [] ->
             Nothing
 
@@ -251,8 +229,8 @@ delete (Zipper tree breadcrumbs) =
 
 -}
 setTree : Tree a -> Zipper a -> Zipper a
-setTree tree (Zipper _ breadcrumbs) =
-    Zipper tree breadcrumbs
+setTree tree (Zipper _ zipperBreadcrumbs) =
+    Zipper tree zipperBreadcrumbs
 
 
 {-| Update current `Tree` using given function.
@@ -283,8 +261,8 @@ update f (Zipper t bs) =
 
 -}
 updateItem : (a -> a) -> Zipper a -> Zipper a
-updateItem predicate (Zipper tree breadcrumbs) =
-    Zipper (Tree (predicate <| Tree.item tree) <| Tree.descendants tree) breadcrumbs
+updateItem predicate (Zipper tree zipperBreadcrumbs) =
+    Zipper (Tree (predicate <| Tree.item tree) <| Tree.descendants tree) zipperBreadcrumbs
 
 
 {-| Map function over `Zipper`.
@@ -299,8 +277,8 @@ updateItem predicate (Zipper tree breadcrumbs) =
 
 -}
 map : (a -> b) -> Zipper a -> Zipper b
-map predicate (Zipper tree breadcrumbs) =
-    Zipper (Tree.map predicate tree) <| breadcrumbsMap predicate breadcrumbs
+map predicate (Zipper tree zipperBreadcrumbs) =
+    Zipper (Tree.map predicate tree) <| breadcrumbsMap predicate zipperBreadcrumbs
 
 
 {-| Performs filter on current `Tree` in `Zipper`. See `Tree.filter` for more informations.
@@ -381,8 +359,8 @@ attempt action zipper =
 
 -}
 up : Zipper a -> Maybe (Zipper a)
-up (Zipper tree breadcrumbs) =
-    case breadcrumbs of
+up (Zipper tree zipperBreadcrumbs) =
+    case zipperBreadcrumbs of
         [] ->
             Nothing
 
@@ -436,8 +414,10 @@ upwards : Int -> Zipper a -> Maybe (Zipper a)
 upwards n zipper =
     if n < 0 then
         Nothing
+
     else if n == 0 then
         Just zipper
+
     else
         up zipper
             |> Maybe.andThen (upwards (n - 1))
@@ -464,8 +444,8 @@ upwards n zipper =
 
 -}
 root : Zipper a -> Zipper a
-root ((Zipper _ breadcrumbs) as zipper) =
-    attempt (upwards <| List.length breadcrumbs) zipper
+root ((Zipper _ zipperBreadcrumbs) as zipper) =
+    attempt (upwards <| List.length zipperBreadcrumbs) zipper
 
 
 {-| Open first children that satisfy given condition.
@@ -494,26 +474,26 @@ root ((Zipper _ breadcrumbs) as zipper) =
 
 -}
 open : (a -> Bool) -> Zipper a -> Maybe (Zipper a)
-open predicate (Zipper tree breadcrumbs) =
+open predicate (Zipper zipperTree zipperBreadcrumbs) =
     let
-        current =
-            Tree.item tree
+        currentItem =
+            Tree.item zipperTree
 
-        children =
-            Tree.descendants tree
+        treeChildren =
+            Tree.descendants zipperTree
 
         ( left, item, right ) =
-            cutForest predicate children
+            cutForest predicate treeChildren
     in
     Maybe.map
         (\tree ->
             Zipper tree <|
                 Breadcrumb
                     { left = left
-                    , parent = current
+                    , parent = currentItem
                     , right = right
                     }
-                    :: breadcrumbs
+                    :: zipperBreadcrumbs
         )
         item
 
@@ -540,10 +520,10 @@ Resulting list of breadcrumbs contains currently focused item as well.
 
 -}
 getPath : (a -> b) -> Zipper a -> List b
-getPath fc (Zipper tree breadcrumbs) =
+getPath fc (Zipper tree zipperBreadcrumbs) =
     List.foldl (\(Breadcrumb { parent }) acc -> fc parent :: acc)
         [ fc <| Tree.item tree ]
-        breadcrumbs
+        zipperBreadcrumbs
 
 
 {-| Open multiple levels reducing list by given function.
@@ -562,14 +542,14 @@ getPath fc (Zipper tree breadcrumbs) =
         |> insert (T.singleton "bar")
         |> openPath (==) [ "not-here", "baz" ]
         |> Result.map current
-    --> Err "Can't resolve open for \"not-here\""
+    --> Err "Can't resolve open"
 
 -}
 openPath : (b -> a -> Bool) -> List b -> Zipper a -> Result String (Zipper a)
 openPath predicate path zipper =
     let
         toResult i =
-            Result.fromMaybe <| "Can't resolve open for " ++ toString i
+            Result.fromMaybe <| "Can't resolve open"
     in
     List.foldl (\i acc -> Result.andThen (toResult i << (open <| predicate i)) acc) (Ok zipper) path
 
@@ -588,7 +568,7 @@ openPath predicate path zipper =
 
 -}
 openAll : Zipper a -> List (Zipper a)
-openAll (Zipper tree breadcrumbs) =
+openAll (Zipper tree zipperBreadcrumbs) =
     sliceForest (Tree.descendants tree)
         |> List.map
             (\( left, parent, right ) ->
@@ -598,7 +578,7 @@ openAll (Zipper tree breadcrumbs) =
                         , parent = Tree.item tree
                         , right = right
                         }
-                        :: breadcrumbs
+                        :: zipperBreadcrumbs
             )
 
 
@@ -646,7 +626,7 @@ attemptOpenPath predicate path zipper =
 -}
 breadcrumbs : Zipper a -> List a
 breadcrumbs (Zipper _ bs) =
-    List.map (\(Breadcrumb { parent }) -> parent ) bs
+    List.map (\(Breadcrumb { parent }) -> parent) bs
 
 
 {-| Get `Breacrub`s as indexed `List`.
@@ -700,6 +680,7 @@ cutForest_ acc predicate forest =
         head :: tail ->
             if predicate <| Tree.item head then
                 ( acc, Just head, LL.fromList tail )
+
             else
                 cutForest_ (LL.cons head acc) predicate (LL.fromList tail)
 
