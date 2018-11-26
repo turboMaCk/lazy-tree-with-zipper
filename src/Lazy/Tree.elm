@@ -382,12 +382,12 @@ andMap =
     Tree (Tree "foo" <| LL.fromList [ singleton "bar"]) (LL.fromList [ singleton <| singleton "baz" ])
         |> flatten
         |> children
-    --> [ "bar", "baz" ]
+    --> [ "baz", "bar" ]
 
 -}
 flatten : Tree (Tree a) -> Tree a
 flatten (Tree (Tree treeItem c) treeChildren) =
-    Tree treeItem <| LL.append c <| LL.map flatten treeChildren
+    Tree treeItem <| LL.append (LL.map flatten treeChildren) c
 
 
 {-| Map given function onto a `Tree` and flatten the result.
@@ -399,7 +399,7 @@ flatten (Tree (Tree treeItem c) treeChildren) =
         |> insert (singleton "baz")
         |> andThen (\a -> Tree a <| LL.fromList [ singleton <| a ++ " fighter" ])
         |> children
-    --> [ "foo fighter", "bar", "baz" ]
+    --> [ "bar", "baz", "foo fighter" ]
 
 -}
 andThen : (a -> Tree b) -> Tree a -> Tree b
