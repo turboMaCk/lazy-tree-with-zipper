@@ -32,7 +32,7 @@ items =
     [ { id = 1, name = "Foo", parent = Nothing }
     , { id = 2, name = "Bar", parent = Nothing }
     , { id = 3, name = "Baz", parent = Nothing }
-    , { id = 4, name = "Fobar", parent = Just 1 }
+    , { id = 4, name = "Foobar", parent = Just 1 }
     , { id = 5, name = "Bar child", parent = Just 2 }
     , { id = 6, name = "Foobar child", parent = Just 4 }
     ]
@@ -65,7 +65,7 @@ type Msg
 
 
 update : Msg -> Model -> Model
-update (Toggle zipper) model =
+update (Toggle zipper) _ =
     Zipper.updateItem (\( s, i ) -> ( not s, i )) zipper
 
 
