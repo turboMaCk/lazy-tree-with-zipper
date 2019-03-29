@@ -1,29 +1,9 @@
-module Lazy.LList
-    exposing
-        ( LList
-        , andThen
-        , append
-        , concat
-        , cons
-        , empty
-        , filter
-        , filterMap
-        , foldl
-        , foldr
-        , fromList
-        , head
-        , isEmpty
-        , llist
-        , map
-        , map2
-        , reverse
-        , singleton
-        , sort
-        , sortBy
-        , sortWith
-        , tail
-        , toList
-        )
+module Lazy.LList exposing
+    ( LList, empty, singleton, llist, fromList
+    , cons, append
+    , isEmpty, toList, head, tail
+    , map, map2, filter, filterMap, reverse, sort, sortBy, sortWith, foldr, foldl, concat, andThen
+    )
 
 {-| This module implements lazy construction of strict List.
 It is not Lazy List implementation and it has different characteristics.
@@ -61,7 +41,7 @@ type alias LList a =
     Lazy (List a)
 
 
-{-| Init empty `LList`.
+{-| Initialize empty `LList`.
 
     toList empty
     --> []
@@ -72,7 +52,7 @@ empty =
     llist identity []
 
 
-{-| Init singleton `LList`.
+{-| Initialize singleton `LList`.
 
     singleton "foo"
         |> toList
@@ -86,9 +66,9 @@ singleton =
 
 {-| Init `LList` using constructor.
 
-`LList` is init as a function from `a -> List b`.
+`LList` is initialized using a function from `a -> List b`.
 Evaluation of this function is lazy and happens in time when
-actuall value is needed, not when constructor is called.
+actual value is needed, not when constructor is called.
 
 For instance you can use some `List` constructor:
 
@@ -186,7 +166,7 @@ toList =
     Lazy.force
 
 
-{-| Get first element from `LList`.
+{-| Get the first element from `LList`.
 
     head empty
     --> Nothing
@@ -203,7 +183,7 @@ head =
     List.head << toList
 
 
-{-| Get first element from `LList`.
+{-| Get the first element from `LList`.
 
     tail empty
     --> Nothing
@@ -236,11 +216,11 @@ This function is performed lazily.
 
 -}
 map : (a -> b) -> LList a -> LList b
-map predicate =
-    Lazy.map (List.map predicate)
+map f =
+    Lazy.map (List.map f)
 
 
-{-| Map two functions over `LList`.
+{-| Map a functions over two `LList`s.
 
     llist (List.range 0) 5
         |> map2 (+) (llist (List.range 0) 5)

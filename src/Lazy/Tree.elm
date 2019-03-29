@@ -45,14 +45,14 @@ import Lazy.LList as LL exposing (LList)
 
 
 {-| \*\* Be careful when comparing `Tree`s using `(==)`.\*\*
-Due to use of lazyness `(==)` isn't reliable for comparing Trees.
+Due to use of laziness `(==)` isn't reliable for comparing Trees.
 -}
 type Tree a
     = Tree a (Forest a)
 
 
 {-| \*\* Be careful when comparing `Forest`s using `(==)`.\*\*
-Due to use of lazyness `(==)` isn't reliable for comparing Forests.
+Due to use of laziness `(==)` isn't reliable for comparing Forests.
 -}
 type alias Forest a =
     LList (Tree a)
@@ -76,7 +76,7 @@ singleton a =
 
 {-| Build `Tree` using custom constructor.
 
-This can be for instance used to build `Tree` from other recursive data structre:
+This can be for instance used to build `Tree` from other recursive data structure:
 
     type Item = Item String (List Item)
 
@@ -191,8 +191,8 @@ descendants (Tree _ d) =
 
 -}
 map : (a -> b) -> Tree a -> Tree b
-map predicate (Tree a forest) =
-    Tree (predicate a) <| forestMap predicate forest
+map fc (Tree a forest) =
+    Tree (fc a) <| forestMap fc forest
 
 
 {-| Map function over two `Tree`s
@@ -210,14 +210,14 @@ map predicate (Tree a forest) =
 
 -}
 map2 : (a -> b -> c) -> Tree a -> Tree b -> Tree c
-map2 predicate (Tree a1 f1) (Tree a2 f2) =
-    Tree (predicate a1 a2) <| forestMap2 predicate f1 f2
+map2 fc (Tree a1 f1) (Tree a2 f2) =
+    Tree (fc a1 a2) <| forestMap2 fc f1 f2
 
 
 {-| Filter `Tree` children by given function.
 
 This function goes from children of root downwards.
-This means that nodes that doesn't satisfy predicate
+This means that nodes that don't satisfy predicate
 are excluded and filter is never performed over their children
 even if on those it might pass.
 
@@ -250,7 +250,7 @@ filter_ predicate (Tree treeItem c) =
         Nothing
 
 
-{-| FilterMap on `Tree`. Works similarly to `List.filterMap` with same properties as [filter](#filter).
+{-| FilterMap on `Tree`. Works similarly to `List.filterMap` with the same properties as [filter](#filter).
 In case of `filterMap` even root node has to satisfy predicate otherwise
 `Nothing` is returned.
 
@@ -273,7 +273,7 @@ filterMap predicate (Tree treeItem c) =
         |> Maybe.map (\i -> Tree i <| LL.filterMap (filterMap predicate) c)
 
 
-{-| Sort `tree`.
+{-| Sort `Tree`.
 
     singleton 10
         |> insert (singleton 5)
@@ -282,7 +282,7 @@ filterMap predicate (Tree treeItem c) =
         |> children
     --> [ 2, 5 ]
 
-it applies all levels:
+it applies to all levels:
 
     import Lazy.LList as LL
 
@@ -479,8 +479,8 @@ fromList_ parent isParent list =
 
 -}
 forestMap : (a -> b) -> Forest a -> Forest b
-forestMap predicate =
-    LL.map (map predicate)
+forestMap fc =
+    LL.map (map fc)
 
 
 {-| Map function over two `Forest`s.
@@ -496,8 +496,8 @@ forestMap predicate =
 
 -}
 forestMap2 : (a -> b -> c) -> Forest a -> Forest b -> Forest c
-forestMap2 predicate =
-    LL.map2 (map2 predicate)
+forestMap2 fc =
+    LL.map2 (map2 fc)
 
 
 

@@ -4,7 +4,7 @@
 
 This is pure Elm [rose tree](https://en.wikipedia.org/wiki/Rose_tree)
 with [zipper](https://en.wikipedia.org/wiki/Zipper_(data_structure)) implementation.
-In context of Elm, this data structure is mostly useful for building hierarchical interfaces
+In the context of Elm, this data structure is mostly useful for building hierarchical interfaces
 like menus, data browsers or filters.
 
 Main features of this library are things like easy building tree structure from flat Lists
@@ -13,13 +13,13 @@ with very good performance characteristics, powerful and extensible zipper and f
 # Performance
 
 `Tree` is using custom List like implementation (`LList`) to enable lazy level after level evaluation
-of tree. In fact `LList` is just a function that construct plain old `List`. This id approach is the main performance optimization used in this library.
+of tree. In fact `LList` is just a function that constructs plain old `List`. This approach is the main performance optimization used in this library.
 
 There is another library implementing same idea in slightly different way [tomjkidd/elm-multiway-tree-zipper](https://github.com/tomjkidd/elm-multiway-tree-zipper).
-The main difference is that `elm-multiway-tree-zipper` implementation is strict so whole Tree is immediately evaluated.
-Implementation provided by this package is optimalized for situations in which it isn't necessary to construct whole
+The main difference is that `elm-multiway-tree-zipper` implementation is strict so the whole Tree is immediately evaluated.
+Implementation provided by this package is optimized for situations in which it isn't necessary to construct the whole
 structure immediately. In situations where Tree is expanded level by level this implementation yields
-much better performance than strict implementation especially for large trees.
+much better performance than strict implementation, especially for large trees.
 You can find basic comparison in [performance](https://github.com/turboMaCk/lazy-tree-with-zipper/blob/master/performance).
 
 __This package is highly experimental and might change a lot over time.__
@@ -28,28 +28,29 @@ Feedback and contributions to both code and documentation are very welcome.
 
 # Usage
 
-As a pure Elm package preferable way to install is using elm package:
+To install this package run:
 
 ```
-$ elm package install turboMaCk/lazy-tree-with-zipper
+$ elm install turboMaCk/lazy-tree-with-zipper
 ```
 
-This is example of whole application that renders levels of items as nested tree
+This is an example application that renders levels of items as nested tree
 with toggling between open and closed state in every level:
 
 ```elm
-module Main exposing (..)
+module Main exposing (main)
 
+import Browser
 import Html exposing (Html)
 import Html.Events as Events
-import Lazy.Tree as Tree exposing (Tree(Tree))
+import Lazy.Tree as Tree exposing (Tree(..))
 import Lazy.Tree.Zipper as Zipper exposing (Zipper)
 
 
-main : Program Never Model Msg
+main : Program () Model Msg
 main =
-    Html.beginnerProgram
-        { model = init
+    Browser.sandbox
+        { init = init
         , update = update
         , view = view
         }
@@ -71,7 +72,7 @@ items =
     [ { id = 1, name = "Foo", parent = Nothing }
     , { id = 2, name = "Bar", parent = Nothing }
     , { id = 3, name = "Baz", parent = Nothing }
-    , { id = 4, name = "Fobar", parent = Just 1 }
+    , { id = 4, name = "Foobar", parent = Just 1 }
     , { id = 5, name = "Bar child", parent = Just 2 }
     , { id = 6, name = "Foobar child", parent = Just 4 }
     ]
@@ -89,7 +90,7 @@ init =
         root =
             { id = -1, name = "root", parent = Nothing }
     in
-    List.map ((,) False) items
+    List.map (\b -> ( False, b )) items
         |> Tree.fromList (\p ( _, i ) -> Maybe.map (.id << Tuple.second) p == i.parent)
         |> Tree ( False, root )
         |> Zipper.fromTree
@@ -104,7 +105,7 @@ type Msg
 
 
 update : Msg -> Model -> Model
-update (Toggle zipper) model =
+update (Toggle zipper) _ =
     Zipper.updateItem (\( s, i ) -> ( not s, i )) zipper
 
 
@@ -129,9 +130,11 @@ viewLevel zipper =
                 Html.span []
                     [ if isOpen then
                         Html.text "- "
+
                       else
                         Html.text "+ "
                     ]
+
               else
                 Html.text ""
             , Html.text item.name
@@ -140,6 +143,7 @@ viewLevel zipper =
             if isOpen then
                 Zipper.openAll zipper
                     |> List.map viewLevel
+
             else
                 []
         ]
@@ -148,13 +152,13 @@ viewLevel zipper =
 # Background
 
 I've spent about a year experimenting with different ideas of Rose Tree implementation
-optimized for needs of building UIs for recursive data. The biggest turned out to be performance.
+optimized for needs of building UIs for recursive data. The biggest problem turned out to be performance.
 Usually, data for web applications are coming from a server which uses SQL database as storage.
 API usually then renders flat JSON or any other data format which uses references to describe recursive relationships.
 Therefore one of the main features that are needed is an efficient and easy way to build tree from a list of data.
-This usually results in exponential complexity. Since one item might be a child of multiple other things
+This usually results in quadratic complexity. Since one item might be a child of multiple other things
 there has to be at least one iteration over the whole list of data. Also by definition using such data
-for building rose tree might result in infinity deep resulting tree.
+for building rose tree might result in infinitely deep resulting tree.
 
 Those are the things I've experimented with over time:
 
