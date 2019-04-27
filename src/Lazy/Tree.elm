@@ -4,6 +4,7 @@ module Lazy.Tree exposing
     , insert
     , map, map2, filter, filterMap, sort, sortBy, sortWith, andMap, flatten, andThen
     , forestMap, forestMap2
+    , duplicate, extend
     )
 
 {-| This module implements Rose Tree data structure.
@@ -32,7 +33,7 @@ to lazily evaluate levels of Tree.
 
 # Transforms
 
-@docs map, map2, filter, filterMap, sort, sortBy, sortWith, andMap, flatten, andThen
+@docs map, map2, filter, filterMap, sort, sortBy, sortWith, andMap, flatten, andThen, duplicate, extend
 
 
 # Forest
@@ -498,6 +499,20 @@ forestMap fc =
 forestMap2 : (a -> b -> c) -> Forest a -> Forest b -> Forest c
 forestMap2 fc =
     LL.map2 (map2 fc)
+
+
+{-| Duplicates Tree (Comonad)
+-}
+duplicate : Tree a -> Tree (Tree a)
+duplicate ((Tree _ xs) as t) =
+    Tree t <| LL.map duplicate xs
+
+
+{-| Extend tree (Comonad)
+-}
+extend : (Tree a -> b) -> Tree a -> Tree b
+extend f =
+    map f << duplicate
 
 
 
