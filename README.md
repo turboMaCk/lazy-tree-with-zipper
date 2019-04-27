@@ -1,4 +1,4 @@
-# Tree with Zipper
+# Lazy Tree with Zipper
 
 [![Build Status](https://travis-ci.org/turboMaCk/lazy-tree-with-zipper.svg?branch=master)](https://travis-ci.org/turboMaCk/lazy-tree-with-zipper) [Documentation](http://package.elm-lang.org/packages/turboMaCk/lazy-tree-with-zipper/latest)
 
