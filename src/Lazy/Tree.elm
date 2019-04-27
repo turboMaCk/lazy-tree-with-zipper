@@ -33,7 +33,7 @@ to lazily evaluate levels of Tree.
 
 # Transforms
 
-@docs map, map2, filter, filterMap, sort, sortBy, sortWith, andMap, flatten, andThen
+@docs map, map2, filter, filterMap, sort, sortBy, sortWith, andMap, flatten, andThen, duplicate, extend
 
 
 # Forest
