@@ -22,8 +22,6 @@ structure immediately. In situations where Tree is expanded level by level this 
 much better performance than strict implementation, especially for large trees.
 You can find basic comparison in [performance](https://github.com/turboMaCk/lazy-tree-with-zipper/blob/master/performance).
 
-__This package is highly experimental and might change a lot over time.__
-
 Feedback and contributions to both code and documentation are very welcome.
 
 # Usage
