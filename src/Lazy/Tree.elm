@@ -1,10 +1,10 @@
 module Lazy.Tree exposing
-    ( Tree(..), Forest, singleton, build, fromList
+    ( Tree(..), Forest, singleton, build, fromList, fromListWithComparableIds
     , isEmpty, item, children, descendants
     , insert
-    , map, map2, filter, filterMap, sort, sortBy, sortWith, andMap, flatten, andThen
+    , map, map2, filter, filterMap, sort, sortBy, sortWith, andMap, flatten, andThen, duplicate, extend
     , forestMap, forestMap2
-    , duplicate, extend
+    , forceTree, forceForest
     )
 
 {-| This module implements Rose Tree data structure.
@@ -18,7 +18,7 @@ to lazily evaluate levels of Tree.
 
 # Types & Constructor
 
-@docs Tree, Forest, singleton, build, fromList
+@docs Tree, Forest, singleton, build, fromList, fromListWithComparableIds
 
 
 # Query
@@ -40,8 +40,15 @@ to lazily evaluate levels of Tree.
 
 @docs forestMap, forestMap2
 
+
+# TODO this won't be added to API, added only for benchmarking
+
+@docs forceTree, forceForest
+
 -}
 
+import Dict exposing (Dict)
+import Lazy
 import Lazy.LList as LL exposing (LList)
 
 
@@ -467,6 +474,54 @@ fromList_ parent isParent list =
     LL.llist (List.map (constructTree isParent list) << List.filter (isParent parent)) list
 
 
+{-| TODO better name if we decide to include it
+-}
+fromListWithComparableIds : (a -> comparable) -> (a -> Maybe comparable) -> List a -> Forest a
+fromListWithComparableIds getNodeId getParentId list =
+    let
+        -- Split out list of roots (nodes with parent Nothing)
+        -- and Dict which maps parentIds to list of children
+        -- This means you have to pay `O(n*log(n))` once, when you call this function
+        -- but then each subsequent level expansions will be cheaper (`O(log(n))` lookup in Dict)
+        ( roots, parentIdToChildren ) =
+            List.foldr
+                (\a ( rts, ptch ) ->
+                    case getParentId a of
+                        Nothing ->
+                            -- a is root, add it to list of roots
+                            ( a :: rts
+                            , ptch
+                            )
+
+                        Just parentId ->
+                            -- a is non-root - prepend it to the list of children under the id of its parent
+                            ( rts
+                            , Dict.update parentId
+                                (\mval ->
+                                    case mval of
+                                        Nothing ->
+                                            Just [ a ]
+
+                                        Just kids ->
+                                            Just (a :: kids)
+                                )
+                                ptch
+                            )
+                )
+                ( [], Dict.empty )
+                list
+
+        buildTree : a -> Tree a
+        buildTree =
+            build
+                (\a ->
+                    -- This is the `O(log(n))` work done when expanding level
+                    Dict.get (getNodeId a) parentIdToChildren |> Maybe.withDefault []
+                )
+    in
+    LL.map buildTree <| LL.fromList roots
+
+
 {-| Map function over `Forest`.
 
     import Lazy.LList as LL
@@ -513,6 +568,16 @@ duplicate ((Tree _ xs) as t) =
 extend : (Tree a -> b) -> Tree a -> Tree b
 extend f =
     map f << duplicate
+
+
+forceTree : Tree a -> Tree a
+forceTree (Tree x xs) =
+    Tree x (forceForest xs)
+
+
+forceForest : Forest a -> Forest a
+forceForest =
+    Lazy.evaluate << LL.map forceTree
 
 
 
