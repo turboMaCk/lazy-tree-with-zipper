@@ -1,12 +1,20 @@
 # Performance
 
+## fromList vs fromKeyedList
+
+This is the benchmark result between the two function for construction from `List` from FireFox on my laptop:
+
+![](construction.png)
+
+## Lazy Implementation vs Strict Implementation
+
 I've implemented the same feature within one of our application using
 [tomjkidd/elm-multiway-tree-zipper](http://package.elm-lang.org/packages/tomjkidd/elm-multiway-tree-zipper/latest)
 and this package and profiled performance with real production data.
 
 Application fetches data from two endpoints and then builds a Tree from them. The total number of nodes within resulting tree is 4278.
 
-# Lazy Implementation (this package)
+### Lazy Implementation (this package)
 
 MacOS Chrome:
 ![](mac_lazy.png)
@@ -14,7 +22,7 @@ MacOS Chrome:
 Arch Linux Chromium:
 ![](linux_lazy.png)
 
-# Strict Implementation (tomjkidd/elm-multiway-tree-zipper)
+### Strict Implementation (tomjkidd/elm-multiway-tree-zipper)
 
 MacOS Chrome:
 ![](mac_strict.png)
@@ -23,14 +31,14 @@ Arch Linux Chromium:
 ![](linux_strict.png)
 
 
-## Conclusion
+### Conclusion
 
 For large trees where it's not necessary to evaluate whole structure at once lazy tree is definitely much more performant.
 However if you're working with much smaller data strict version like `tomjkidd/elm-multiway-tree-zipper` should be fine.
 
-## HW specifications
+### HW specifications
 
-### MacOS Chrome
+#### MacOS Chrome
 
 ```
 MacBook Pro (Retina, 15-inch, Mid 2015)
@@ -44,7 +52,7 @@ Chrome Version 63.0.3239.108 (Official Build) (64-bit)
 ```
 
 
-### Arch Linux Chromium
+#### Arch Linux Chromium
 
 ```
 OS: Arch Linux
