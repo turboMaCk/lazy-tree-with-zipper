@@ -6,6 +6,10 @@ import Lazy.Tree as Tree exposing (Tree)
 import Lazy.Tree.Force as Tree
 
 
+resolveParents =
+    Maybe.withDefault [] << Maybe.map List.singleton << .parent
+
+
 main : BenchmarkProgram
 main =
     Benchmark.Runner.program <|
@@ -26,7 +30,7 @@ createAndExpand =
         , benchmark "fromKeyedList (10 elems)" <|
             \_ ->
                 noodle10
-                    |> Tree.fromKeyedList .id .parent
+                    |> Tree.fromKeyedList .id resolveParents
                     |> Tree.forceForest
         , benchmark "fromList (100 elems)" <|
             \_ ->
@@ -36,7 +40,7 @@ createAndExpand =
         , benchmark "fromKeyedList (100 elems)" <|
             \_ ->
                 noodle100
-                    |> Tree.fromKeyedList .id .parent
+                    |> Tree.fromKeyedList .id resolveParents
                     |> Tree.forceForest
         ]
 
@@ -51,7 +55,7 @@ createOnly =
         , benchmark "fromKeyedList (10)" <|
             \_ ->
                 noodle10
-                    |> Tree.fromKeyedList .id .parent
+                    |> Tree.fromKeyedList .id resolveParents
         , benchmark "fromList (100)" <|
             \_ ->
                 noodle100
@@ -59,7 +63,7 @@ createOnly =
         , benchmark "fromKeyedList (100)" <|
             \_ ->
                 noodle100
-                    |> Tree.fromKeyedList .id .parent
+                    |> Tree.fromKeyedList .id resolveParents
         ]
 
 

@@ -17,7 +17,7 @@ to lazily evaluate levels of Tree.
 
 # Types & Constructor
 
-@docs Tree, Forest, singleton, build, fromList, fromListWithComparableIds
+@docs Tree, Forest, singleton, build, fromList, fromKeyedList
 
 
 # Query
@@ -485,7 +485,7 @@ doing more optimal operations during evaluation of the Tree at later time.
     , { id = 2, parent = Nothing }
     , { id = 3, parent = Just 1 }
     ]
-        |> fromKeyedList .id .parent
+        |> fromKeyedList .id (Maybe.withDefault [] << Maybe.map List.singleton << .parent)
         |> LL.map (.id << item)
         |> LL.toList
     --> [ 1, 2 ]
@@ -503,8 +503,8 @@ doing more optimal operations during evaluation of the Tree at later time.
     --> [ 3, 4, 5 ]
 
 -}
-fromKeyedList : (a -> comparable) -> (a -> Maybe comparable) -> List a -> Forest a
-fromKeyedList getNodeId getParentId list =
+fromKeyedList : (a -> comparable) -> (a -> List comparable) -> List a -> Forest a
+fromKeyedList getNodeId getParentIds list =
     let
         -- Split out list of roots (nodes with parent Nothing)
         -- and Dict which maps parentIds to list of children
@@ -513,26 +513,31 @@ fromKeyedList getNodeId getParentId list =
         ( roots, parentIdToChildren ) =
             List.foldr
                 (\a ( rts, ptch ) ->
-                    case getParentId a of
-                        Nothing ->
+                    case getParentIds a of
+                        [] ->
                             -- a is root, add it to list of roots
                             ( a :: rts
                             , ptch
                             )
 
-                        Just parentId ->
+                        parentIds ->
                             -- a is non-root - prepend it to the list of children under the id of its parent
                             ( rts
-                            , Dict.update parentId
-                                (\mval ->
-                                    case mval of
-                                        Nothing ->
-                                            Just [ a ]
+                            , List.foldr
+                                (\parentId acc ->
+                                    Dict.update parentId
+                                        (\mval ->
+                                            case mval of
+                                                Nothing ->
+                                                    Just [ a ]
 
-                                        Just kids ->
-                                            Just (a :: kids)
+                                                Just kids ->
+                                                    Just (a :: kids)
+                                        )
+                                        acc
                                 )
                                 ptch
+                                parentIds
                             )
                 )
                 ( [], Dict.empty )
