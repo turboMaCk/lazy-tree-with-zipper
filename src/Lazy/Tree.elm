@@ -1,10 +1,9 @@
 module Lazy.Tree exposing
-    ( Tree(..), Forest, singleton, build, fromList, fromListWithComparableIds
+    ( Tree(..), Forest, singleton, build, fromList, fromKeyedList
     , isEmpty, item, children, descendants
     , insert
     , map, map2, filter, filterMap, sort, sortBy, sortWith, andMap, flatten, andThen, duplicate, extend
     , forestMap, forestMap2
-    , forceTree, forceForest
     )
 
 {-| This module implements Rose Tree data structure.
@@ -474,10 +473,38 @@ fromList_ parent isParent list =
     LL.llist (List.map (constructTree isParent list) << List.filter (isParent parent)) list
 
 
-{-| TODO better name if we decide to include it
+{-| Construct `Forest` from a list of items that can be **uniquely identified** by comparable value.
+
+This function can yield much better performance than more general [`fromList`](#fromList) alternative.
+Be aware that this function pushes **more work on initial construction of the Tree** at the benefit of
+doing more optimal operations during evaluation of the Tree at later time.
+
+    import Lazy.LList as LL
+
+    [ { id = 1, parent = Nothing }
+    , { id = 2, parent = Nothing }
+    , { id = 3, parent = Just 1 }
+    ]
+        |> fromKeyedList .id .parent
+        |> LL.map (.id << item)
+        |> LL.toList
+    --> [ 1, 2 ]
+
+    [ { id = 1, parent = Nothing }
+    , { id = 2, parent = Nothing }
+    , { id = 3, parent = Just 1 }
+    , { id = 4, parent = Just 1 }
+    , { id = 5, parent = Just 2 }
+    ]
+        |> fromList (\p i -> Maybe.map .id p == i.parent)
+        |> LL.andThen descendants
+        |> LL.map (.id << item)
+        |> LL.toList
+    --> [ 3, 4, 5 ]
+
 -}
-fromListWithComparableIds : (a -> comparable) -> (a -> Maybe comparable) -> List a -> Forest a
-fromListWithComparableIds getNodeId getParentId list =
+fromKeyedList : (a -> comparable) -> (a -> Maybe comparable) -> List a -> Forest a
+fromKeyedList getNodeId getParentId list =
     let
         -- Split out list of roots (nodes with parent Nothing)
         -- and Dict which maps parentIds to list of children
@@ -568,16 +595,6 @@ duplicate ((Tree _ xs) as t) =
 extend : (Tree a -> b) -> Tree a -> Tree b
 extend f =
     map f << duplicate
-
-
-forceTree : Tree a -> Tree a
-forceTree (Tree x xs) =
-    Tree x (forceForest xs)
-
-
-forceForest : Forest a -> Forest a
-forceForest =
-    Lazy.evaluate << LL.map forceTree
 
 
 

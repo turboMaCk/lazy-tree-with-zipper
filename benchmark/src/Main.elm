@@ -3,12 +3,16 @@ module Main exposing (main)
 import Benchmark exposing (..)
 import Benchmark.Runner exposing (BenchmarkProgram)
 import Lazy.Tree as Tree exposing (Tree)
+import Lazy.Tree.Force as Tree
 
 
 main : BenchmarkProgram
 main =
-    -- Benchmark.Runner.program createOnly
-    Benchmark.Runner.program createAndExpand
+    Benchmark.Runner.program <|
+        describe "fromList vs fromKeyedList"
+            [ createOnly
+            , createAndExpand
+            ]
 
 
 createAndExpand : Benchmark
@@ -19,20 +23,20 @@ createAndExpand =
                 noodle10
                     |> Tree.fromList (\p i -> Maybe.map .id p == i.parent)
                     |> Tree.forceForest
-        , benchmark "fromListWithComparableIds (10 elems)" <|
+        , benchmark "fromKeyedList (10 elems)" <|
             \_ ->
                 noodle10
-                    |> Tree.fromListWithComparableIds .id .parent
+                    |> Tree.fromKeyedList .id .parent
                     |> Tree.forceForest
         , benchmark "fromList (100 elems)" <|
             \_ ->
                 noodle100
                     |> Tree.fromList (\p i -> Maybe.map .id p == i.parent)
                     |> Tree.forceForest
-        , benchmark "fromListWithComparableIds (100 elems)" <|
+        , benchmark "fromKeyedList (100 elems)" <|
             \_ ->
                 noodle100
-                    |> Tree.fromListWithComparableIds .id .parent
+                    |> Tree.fromKeyedList .id .parent
                     |> Tree.forceForest
         ]
 
@@ -44,18 +48,18 @@ createOnly =
             \_ ->
                 noodle10
                     |> Tree.fromList (\p i -> Maybe.map .id p == i.parent)
-        , benchmark "fromListWithComparableIds (10)" <|
+        , benchmark "fromKeyedList (10)" <|
             \_ ->
                 noodle10
-                    |> Tree.fromListWithComparableIds .id .parent
+                    |> Tree.fromKeyedList .id .parent
         , benchmark "fromList (100)" <|
             \_ ->
                 noodle100
                     |> Tree.fromList (\p i -> Maybe.map .id p == i.parent)
-        , benchmark "fromListWithComparableIds (100)" <|
+        , benchmark "fromKeyedList (100)" <|
             \_ ->
                 noodle100
-                    |> Tree.fromListWithComparableIds .id .parent
+                    |> Tree.fromKeyedList .id .parent
         ]
 
 
