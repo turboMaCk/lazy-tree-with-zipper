@@ -39,11 +39,6 @@ to lazily evaluate levels of Tree.
 
 @docs forestMap, forestMap2
 
-
-# TODO this won't be added to API, added only for benchmarking
-
-@docs forceTree, forceForest
-
 -}
 
 import Dict exposing (Dict)
