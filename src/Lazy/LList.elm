@@ -2,7 +2,7 @@ module Lazy.LList exposing
     ( LList, empty, singleton, llist, fromList
     , cons, append
     , isEmpty, toList, head, tail
-    , map, map2, filter, filterMap, reverse, sort, sortBy, sortWith, foldr, foldl, concat, andThen
+    , map, map2, filter, filterMap, reverse, sort, sortBy, sortWith, stableSortWith, foldr, foldl, concat, andThen
     )
 
 {-| This module implements lazy construction of strict List.
@@ -324,7 +324,7 @@ sortBy predicate =
             EQ -> EQ
             GT -> LT
 
-    llist (List.range 1) 5
+    llist (List.range 1 5)
         |> sortWith flippedComparison
         |> toList
     --> [ 5, 4, 3, 2, 1 ]
@@ -333,8 +333,44 @@ This function is performed lazily.
 
 -}
 sortWith : (a -> a -> Order) -> LList a -> LList a
-sortWith predicate =
-    Lazy.map (List.sortWith predicate)
+sortWith compare =
+    Lazy.map (List.sortWith compare)
+
+
+{-| Stable sort with for `LList`.
+The original order is guaranteed to be kept if the comparison returns `EQ`.
+
+    compareAge : Person -> Person -> Order
+    compareAge a b =
+        Basics.compare a.age b.age
+
+    llist [ { name = "Joe", age = 25 }, { name = "Sue", age = 25 }, { name = "Johann", age = 23 } ]
+        |> stableSortWith compareAge
+        |> toList
+    --> [ { name = "Johann", age = 23 }, { name = "Joe", age = 25 }, { name = "Sue", age = 25 } ]
+
+This function is performed lazily.
+
+-}
+stableSortWith : (a -> a -> Order) -> LList a -> LList a
+stableSortWith compare =
+    let
+        addIndex =
+            List.indexedMap (\i a -> ( a, i ))
+
+        compareWithIndex ( a1, i1 ) ( a2, i2 ) =
+            let
+                result =
+                    compare a1 a2
+            in
+            case result of
+                Basics.EQ ->
+                    Basics.compare i1 i2
+
+                _ ->
+                    result
+    in
+    Lazy.map (addIndex >> List.sortWith compareWithIndex >> List.map Tuple.first)
 
 
 {-| Same as `List.foldr` but for `LLists`.
