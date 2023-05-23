@@ -2,7 +2,7 @@ module Lazy.LList exposing
     ( LList, empty, singleton, llist, fromList
     , cons, append
     , isEmpty, toList, head, tail
-    , map, map2, filter, filterMap, reverse, sort, sortBy, sortWith, stableStort, stableSortWith, foldr, foldl, concat, andThen
+    , map, map2, filter, filterMap, reverse, sort, sortBy, sortWith, stableSortWith, foldr, foldl, concat, andThen
     )
 
 {-| This module implements lazy construction of strict List.
@@ -28,7 +28,7 @@ just in case some additional user extensions will need it.
 
 # Transformations
 
-@docs map, map2, filter, filterMap, reverse, sort, sortBy, stableSort, stableSortWith, sortWith, foldr, foldl, concat, andThen
+@docs map, map2, filter, filterMap, reverse, sort, sortBy, sortWith, stableSortWith, foldr, foldl, concat, andThen
 
 -}
 
@@ -324,7 +324,7 @@ sortBy predicate =
             EQ -> EQ
             GT -> LT
 
-    llist (List.range 1 5)
+    llist (List.range 1) 5
         |> sortWith flippedComparison
         |> toList
     --> [ 5, 4, 3, 2, 1 ]
@@ -340,11 +340,11 @@ sortWith compare =
 {-| Stable sort with for `LList`.
 The original order is guaranteed to be kept if the comparison returns `EQ`.
 
-    compareAge : Person -> Person -> Order
+    compareAge : { r | age : comparable } -> { r | age : comparable } -> Order
     compareAge a b =
         Basics.compare a.age b.age
 
-    llist [ { name = "Joe", age = 25 }, { name = "Sue", age = 25 }, { name = "Johann", age = 23 } ]
+    fromList [ { name = "Joe", age = 25 }, { name = "Sue", age = 25 }, { name = "Johann", age = 23 } ]
         |> stableSortWith compareAge
         |> toList
     --> [ { name = "Johann", age = 23 }, { name = "Joe", age = 25 }, { name = "Sue", age = 25 } ]
