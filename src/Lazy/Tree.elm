@@ -32,7 +32,7 @@ to lazily evaluate levels of Tree.
 
 # Transforms
 
-@docs map, map2, filter, filterMap, sort, sortBy, sortWith, andMap, flatten, andThen, duplicate, extend
+@docs map, map2, filter, filterMap, sort, sortBy, sortWith, stableSortWith, andMap, flatten, andThen, duplicate, extend
 
 
 # Forest
@@ -358,7 +358,7 @@ sortWith compare (Tree a f) =
 {-| Stable sort `Tree` using custom comparison.
 The original order is guaranteed to be kept if the comparison returns `EQ`.
 
-    compareAge : Person -> Person -> Order
+    compareAge : { r | age : comparable } -> { r | age : comparable } -> Order
     compareAge a b =
         Basics.compare a.age b.age
 
