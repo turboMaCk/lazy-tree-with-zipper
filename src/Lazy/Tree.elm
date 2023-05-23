@@ -2,7 +2,7 @@ module Lazy.Tree exposing
     ( Tree(..), Forest, singleton, build, fromList, fromKeyedList
     , isEmpty, item, children, descendants
     , insert
-    , map, map2, filter, filterMap, sort, sortBy, sortWith, andMap, flatten, andThen, duplicate, extend
+    , map, map2, filter, filterMap, sort, sortBy, sortWith, stableSortWith, andMap, flatten, andThen, duplicate, extend
     , forestMap, forestMap2
     )
 
@@ -331,7 +331,7 @@ sortBy predicate (Tree a f) =
             LL.sortBy (predicate << item) f
 
 
-{-| Sort `Tree` using custom Ordering function
+{-| Sort `Tree` using custom comparison
 
     flippedComparison : comparable -> comparable -> Order
     flippedComparison a b =
@@ -349,10 +349,33 @@ sortBy predicate (Tree a f) =
 
 -}
 sortWith : (a -> a -> Order) -> Tree a -> Tree a
-sortWith predicate (Tree a f) =
+sortWith compare (Tree a f) =
     Tree a <|
-        LL.map (sortWith predicate) <|
-            LL.sortWith (\fst snd -> predicate (item fst) (item snd)) f
+        LL.map (sortWith compare) <|
+            LL.sortWith (\fst snd -> compare (item fst) (item snd)) f
+
+
+{-| Stable sort `Tree` using custom comparison.
+The original order is guaranteed to be kept if the comparison returns `EQ`.
+
+    compareAge : Person -> Person -> Order
+    compareAge a b =
+        Basics.compare a.age b.age
+
+    singleton { name = "Eve", age = 55 }
+        |> insert (singleton { name = "Joe", age = 25 })
+        |> insert (singleton { name = "Sue", age = 25 })
+        |> insert (singleton { name = "Johann", age = 23 })
+        |> stableSortWith compareAge
+        |> children
+    --> [ { name = "Johann", age = 23 }, { name = "Joe", age = 25 }, { name = "Sue", age = 25 } ]
+
+-}
+stableSortWith : (a -> a -> Order) -> Tree a -> Tree a
+stableSortWith compare (Tree a f) =
+    Tree a <|
+        LL.map (stableSortWith compare) <|
+            LL.stableSortWith (\fst snd -> compare (item fst) (item snd)) f
 
 
 {-| Chain map operations.
