@@ -2,7 +2,7 @@ module Lazy.LList exposing
     ( LList, empty, singleton, llist, fromList
     , cons, append
     , isEmpty, toList, head, tail
-    , map, map2, filter, filterMap, reverse, sort, sortBy, sortWith, stableSortWith, foldr, foldl, concat, andThen
+    , map, map2, filter, filterMap, reverse, sort, sortBy, sortWith, stableStort, stableSortWith, foldr, foldl, concat, andThen
     )
 
 {-| This module implements lazy construction of strict List.
@@ -28,7 +28,7 @@ just in case some additional user extensions will need it.
 
 # Transformations
 
-@docs map, map2, filter, filterMap, reverse, sort, sortBy, sortWith, foldr, foldl, concat, andThen
+@docs map, map2, filter, filterMap, reverse, sort, sortBy, stableSort, stableSortWith, sortWith, foldr, foldl, concat, andThen
 
 -}
 
