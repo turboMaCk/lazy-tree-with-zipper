@@ -6,7 +6,7 @@
   },
   "dependencies": {
     "elm": "^0.19.0-nodeps",
-    "elm-test": "^0.19.0-rev6",
+    "elm-test": "^0.19.1",
     "elm-verify-examples": "^5.2.0"
   }
 }
