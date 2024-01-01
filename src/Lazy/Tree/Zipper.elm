@@ -1,8 +1,9 @@
 module Lazy.Tree.Zipper exposing
     ( Breadcrumb, Zipper(..), fromTree
-    , current, children, isRoot, isEmpty, attempt, getTree
-    , insert, delete, update, updateItem, setTree, open, getPath, openPath, openAll, attemptOpenPath, up, upwards, root
-    , map, filter
+    , current, children, isRoot, isEmpty, attempt, getTree, getPath
+    , insert, delete, filter, update, updateItem, setTree
+    , root, up, upwards, toLeft, toRight, open, openAll, openPath, attemptOpenPath
+    , map, duplicate, extend
     , breadcrumbs, indexedBreadcrumbs
     )
 
@@ -25,17 +26,22 @@ Types within this module are exposed type aliases to make it easy to extend the 
 
 # Query
 
-@docs current, children, isRoot, isEmpty, attempt, getTree
+@docs current, children, isRoot, isEmpty, attempt, getTree, getPath
 
 
 # Operations
 
-@docs insert, delete, update, updateItem, setTree, open, getPath, openPath, openAll, attemptOpenPath, up, upwards, root
+@docs insert, delete, filter, update, updateItem, setTree
+
+
+# Navigation
+
+@docs root, up, upwards, toLeft, toRight, open, openAll, openPath, attemptOpenPath
 
 
 # Transformations
 
-@docs map, filter
+@docs map, duplicate, extend
 
 
 # Breadcrumbs
@@ -374,6 +380,40 @@ up (Zipper tree zipperBreadcrumbs) =
                     tail
 
 
+{-| Move to the immediate left sibling, if it exists.
+-}
+toLeft : Zipper a -> Maybe (Zipper a)
+toLeft (Zipper tree bs) =
+    case bs of
+        (Breadcrumb { left, parent, right }) :: bs_ ->
+            case ( LL.head left, LL.tail left ) of
+                ( Just l, Just ls ) ->
+                    Just <| Zipper l (Breadcrumb { left = ls, parent = parent, right = LL.cons tree right } :: bs_)
+
+                _ ->
+                    Nothing
+
+        _ ->
+            Nothing
+
+
+{-| Move to the immediate right sibling, if it exists.
+-}
+toRight : Zipper a -> Maybe (Zipper a)
+toRight (Zipper tree bs) =
+    case bs of
+        (Breadcrumb { left, parent, right }) :: bs_ ->
+            case ( LL.head right, LL.tail right ) of
+                ( Just r, Just rs ) ->
+                    Just <| Zipper r (Breadcrumb { left = LL.cons tree left, parent = parent, right = rs } :: bs_)
+
+                _ ->
+                    Nothing
+
+        _ ->
+            Nothing
+
+
 {-| Perform [`up`](#up) n times.
 
     import Lazy.Tree as T
@@ -645,6 +685,60 @@ breadcrumbs (Zipper _ bs) =
 indexedBreadcrumbs : Zipper a -> List ( Int, a )
 indexedBreadcrumbs (Zipper _ bs) =
     List.indexedMap (\i (Breadcrumb { parent }) -> ( i + 1, parent )) bs
+
+
+{-| Duplicate Zipper (Comonad).
+Converts each node into its full Zipper context.
+For example, the [`extend`] function is defined as
+
+    extend : (Zipper a -> b) -> Zipper a -> Zipper b
+    extend f =
+        map f << duplicate
+
+-}
+duplicate : Zipper a -> Zipper (Zipper a)
+duplicate zipper =
+    let
+        genLeft z =
+            case toLeft z of
+                Nothing ->
+                    LL.empty
+
+                Just zl ->
+                    LL.cons (Tree.build openAll zl) <| genLeft zl
+
+        genRight z =
+            case toRight z of
+                Nothing ->
+                    LL.empty
+
+                Just zr ->
+                    LL.cons (Tree.build openAll zr) <| genRight zr
+
+        genBreadcrumbs z =
+            case up z of
+                Nothing ->
+                    []
+
+                Just zp ->
+                    Breadcrumb { left = genLeft z, parent = zp, right = genRight z } :: genBreadcrumbs z
+    in
+    Zipper (Tree.build openAll zipper) <| genBreadcrumbs zipper
+
+
+{-| Extend Zipper (Comonad).
+Sort of like a contextful `map` where instead of mapping only each element,
+you have access to the whole Zipper at each element's location.
+E.g.:
+
+    extendWithPath : Zipper a -> Zipper ( a, List a )
+    extendWithPath =
+        extend (\z -> ( current z, getPath identity z ))
+
+-}
+extend : (Zipper a -> b) -> Zipper a -> Zipper b
+extend f =
+    map f << duplicate
 
 
 
