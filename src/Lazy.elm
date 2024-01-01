@@ -1,8 +1,7 @@
 module Lazy exposing
     ( Lazy, lazy, force, evaluate
     , map, map2, map3, map4, map5
-    , apply, andThen
-    , applyTo
+    , apply, andMap, andThen
     )
 
 {-| This library lets you delay a computation until later.
@@ -20,7 +19,7 @@ module Lazy exposing
 
 # Chaining
 
-@docs apply, andThen
+@docs apply, andMap, andThen
 
 -}
 
@@ -177,11 +176,11 @@ apply f x =
 
     map3 : (a -> b -> c -> result) -> Lazy a -> Lazy b -> Lazy c -> Lazy result
     map3 f a b c =
-        lazy (\() -> f) |> applyTo a |> applyTo b |> applyTo c
+        lazy (\() -> f) |> andMap a |> andMap b |> andMap c
 
 -}
-applyTo : Lazy a -> Lazy (a -> b) -> Lazy b
-applyTo x f =
+andMap : Lazy a -> Lazy (a -> b) -> Lazy b
+andMap x f =
     apply f x
 
 
