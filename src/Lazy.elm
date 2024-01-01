@@ -1,7 +1,7 @@
 module Lazy exposing
     ( Lazy, lazy, force, evaluate
     , map, map2, map3, map4, map5
-    , apply, andThen
+    , apply, andMap, andThen
     )
 
 {-| This library lets you delay a computation until later.
@@ -19,7 +19,7 @@ module Lazy exposing
 
 # Chaining
 
-@docs apply, andThen
+@docs apply, andMap, andThen
 
 -}
 
@@ -80,12 +80,12 @@ do nothing.
 
     sums : ( Int, Int, Int )
     sums =
-      let
-      evaledSum =
-          evaluate lazySum
+        let
+        evaledSum =
+            evaluate lazySum
 
-      in
-      ( force evaledSum, force evaledSum, force evaledSum )
+        in
+        ( force evaledSum, force evaledSum, force evaledSum )
 
 This is mainly useful for cases where you may want to store a lazy value as a
 lazy value and pass it around. For example, in a list. Where possible, it is better to use
@@ -159,7 +159,9 @@ map5 f a b c d e =
 {-| Lazily apply a lazy function to a lazy value. This is pretty rare on its
 own, but it lets you map as high as you want.
 
-    map3 f a b == f `map` a `apply` b `apply` c
+    map3 : (a -> b -> c -> result) -> Lazy a -> Lazy b -> Lazy c -> Lazy result
+    map3 f a b c =
+        apply (apply (apply (lazy (\() -> f)) a) b) c
 
 It is not the most beautiful, but it is equivalent and will let you create
 `map9` quite easily if you really need it.
@@ -168,6 +170,18 @@ It is not the most beautiful, but it is equivalent and will let you create
 apply : Lazy (a -> b) -> Lazy a -> Lazy b
 apply f x =
     lazy (\() -> force f (force x))
+
+
+{-| Piping-friendly version of `apply`.
+
+    map3 : (a -> b -> c -> result) -> Lazy a -> Lazy b -> Lazy c -> Lazy result
+    map3 f a b c =
+        lazy (\() -> f) |> andMap a |> andMap b |> andMap c
+
+-}
+andMap : Lazy a -> Lazy (a -> b) -> Lazy b
+andMap x f =
+    apply f x
 
 
 {-| Lazily chain lazy computations together, for when you have a series of
@@ -182,13 +196,13 @@ pattern match on a value, for example, when appending lazy lists:
 
     append : Lazy (List a) -> Lazy (List a) -> Lazy (List a)
     append lazyList1 lazyList2 =
-      let
-      appendHelp list1 =
-          case list1 of
-              Empty ->
-                  lazyList2
-              Node first rest ->
-                  cons first (append rest list2))
+        let
+            appendHelp list1 =
+                case list1 of
+                    Empty ->
+                        lazyList2
+                    Node first rest ->
+                        cons first (append rest list2))
       in
       lazyList1 |> Lazy.andThen appendHelp
 
