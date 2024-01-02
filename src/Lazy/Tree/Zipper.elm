@@ -721,7 +721,7 @@ duplicate zipper =
                     []
 
                 Just zp ->
-                    Breadcrumb { left = genLeft z, parent = zp, right = genRight z } :: genBreadcrumbs z
+                    Breadcrumb { left = genLeft z, parent = zp, right = genRight z } :: genBreadcrumbs zp
     in
     Zipper (Tree.build openAll zipper) <| genBreadcrumbs zipper
 
